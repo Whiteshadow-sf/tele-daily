@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>北京电信宽带26年1-7月发展大屏</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#0a1628;--bg2:#050d1a;--card:rgba(15,31,61,0.55);--card-hover:rgba(15,31,61,0.7);
+  --border:#1a3a6c;--border2:rgba(26,58,108,0.4);--text:#e0e6ed;--text2:#8a9bb0;--text3:#5a7a9b;
+  --accent:#C41A1A;--accent2:#e74c3c;--green:#2ecc71;--orange:#f5a623;--blue:#3498db;
+  --panel-shadow:0 2px 20px rgba(0,0,0,0.3),inset 0 0 30px rgba(26,58,108,0.05);
+  --grid-line:rgba(26,58,108,0.15);--tooltip-bg:rgba(10,22,40,0.95);
+  --cum-bg:linear-gradient(135deg,rgba(15,31,61,0.7),rgba(20,40,80,0.35));
+  --kpi-bg:linear-gradient(135deg,rgba(15,31,61,0.85),rgba(20,40,80,0.45));
+  --bar-bg:rgba(196,26,26,0.15);--wz-row-bg:rgba(15,31,61,0.8);
+  --th-bg:rgba(15,31,61,0.95);--row-hover:rgba(196,26,26,0.05);
+  --scan-opacity:0;
+}
+body.light{
+  --bg:#f0f2f5;--bg2:#e8eaed;--card:rgba(255,255,255,0.85);--card-hover:rgba(255,255,255,0.95);
+  --border:#d0d5dd;--border2:rgba(208,213,221,0.6);--text:#1a2332;--text2:#5a6778;--text3:#8a95a5;
+  --accent:#C41A1A;--accent2:#e74c3c;--green:#1a9a5a;--orange:#d48806;--blue:#1677ff;
+  --panel-shadow:0 2px 20px rgba(0,0,0,0.06),inset 0 0 30px rgba(255,255,255,0.3);
+  --grid-line:rgba(0,0,0,0.06);--tooltip-bg:rgba(255,255,255,0.96);
+  --cum-bg:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,242,245,0.95));
+  --kpi-bg:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,242,245,0.8));
+  --bar-bg:rgba(196,26,26,0.1);--wz-row-bg:rgba(196,26,26,0.06);
+  --th-bg:rgba(240,242,245,0.98);--row-hover:rgba(196,26,26,0.04);
+  --scan-opacity:0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{overflow-x:auto;overflow-y:auto;background:var(--bg2);font-family:'Microsoft YaHei','微软雅黑',sans-serif;transition:background .4s;}
+#screen{width:1920px;position:relative;transform-origin:top left;
+  background:var(--bg);transition:background .4s;
+  display:flex;flex-direction:column;min-height:100vh;}
+/* ===== HEADER ===== */
+.header{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:relative;flex-shrink:0;}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--border2),transparent);}
+.header-left{display:flex;align-items:center;gap:16px;}
+.header-accent{width:5px;height:34px;border-radius:3px;background:linear-gradient(to bottom,var(--accent),var(--accent2));box-shadow:0 0 12px rgba(196,26,26,0.35);}
+.header-title{font-size:25px;font-weight:bold;color:var(--text);letter-spacing:2px;transition:color .4s;}
+.header-subtitle{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:1px;transition:color .4s;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.clock-box{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 14px;font-size:13px;color:var(--text2);font-family:'Consolas','Microsoft YaHei',monospace;transition:all .4s;}
+.export-btn{padding:6px 16px;font-size:13px;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid var(--accent);background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:inherit;transition:all .3s;white-space:nowrap;}
+.export-btn:hover{box-shadow:0 0 15px rgba(196,26,26,0.4);transform:translateY(-1px);}
+.export-btn:disabled{opacity:.6;cursor:default;transform:none;}
+.theme-btn{padding:6px 14px;font-size:13px;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text2);font-family:inherit;transition:all .3s;white-space:nowrap;}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 10px rgba(196,26,26,0.15);}
+/* ===== CUMULATIVE BAR ===== */
+.cumulative-bar{display:flex;gap:10px;padding:6px 32px;flex-shrink:0;}
+.cum-card{flex:1;display:flex;align-items:center;gap:8px;background:var(--cum-bg);border:1px solid var(--border);border-radius:6px;padding:0 14px;height:40px;transition:all .3s;}
+.cum-card:hover{border-color:rgba(196,26,26,0.35);box-shadow:0 2px 12px rgba(0,0,0,0.1);}
+.cum-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cum-info{display:flex;align-items:center;justify-content:space-between;flex:1;gap:4px;}
+.cum-label{font-size:12px;color:var(--text2);white-space:nowrap;transition:color .4s;}
+.cum-month-num{color:var(--accent);font-weight:bold;font-size:13px;}
+.cum-value{font-size:16px;font-weight:bold;color:var(--text);white-space:nowrap;font-family:'Consolas','Microsoft YaHei',sans-serif;transition:color .4s;}
+/* ===== MONTH SELECTOR ===== */
+.month-selector{display:flex;gap:8px;padding:6px 32px 8px;align-items:center;flex-shrink:0;}
+.selector-label{font-size:13px;color:var(--text3);margin-right:4px;white-space:nowrap;transition:color .4s;}
+.month-btn{padding:5px 18px;font-size:13px;font-weight:600;border-radius:6px;cursor:pointer;transition:all .3s;border:1px solid var(--border);background:var(--card);color:var(--text2);font-family:inherit;}
+.month-btn:hover{background:rgba(196,26,26,0.1);color:var(--text);border-color:rgba(196,26,26,0.35);}
+.month-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:var(--accent);box-shadow:0 2px 12px rgba(196,26,26,0.35);}
+/* ===== SECTION DIVIDER ===== */
+.section-divider{height:1px;margin:2px 32px;background:linear-gradient(to right,transparent,var(--border2),transparent);flex-shrink:0;}
+/* ===== ROW & COL ===== */
+.row{display:flex;gap:12px;padding:0 20px;flex-shrink:0;margin-bottom:8px;}
+.col{display:flex;flex-direction:column;gap:8px;min-height:0;}
+/* ===== PANEL ===== */
+.panel{display:flex;flex-direction:column;min-height:0;position:relative;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:var(--panel-shadow);transition:all .4s;animation:panelIn .5s ease-out;}
+@keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.panel::before,.panel::after{content:'';position:absolute;width:12px;height:12px;pointer-events:none;}
+.panel::before{top:0;left:0;border-top:2px solid rgba(196,26,26,0.4);border-left:2px solid rgba(196,26,26,0.4);border-radius:8px 0 0 0;}
+.panel::after{bottom:0;right:0;border-bottom:2px solid rgba(196,26,26,0.4);border-right:2px solid rgba(196,26,26,0.4);border-radius:0 0 8px 0;}
+.panel-header{padding:8px 16px;font-size:14px;color:var(--text);font-weight:bold;display:flex;align-items:center;gap:8px;flex-shrink:0;transition:color .4s;}
+.panel-header::before{content:'';width:4px;height:14px;background:var(--accent);border-radius:2px;flex-shrink:0;}
+.chart{flex:1;min-height:0;width:100%;}
+/* ===== KPI ===== */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;height:108px;flex-shrink:0;}
+.kpi-card{display:flex;flex-direction:column;justify-content:center;padding:8px 14px;background:var(--kpi-bg);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;position:relative;overflow:hidden;transition:all .3s;}
+.kpi-card:hover{box-shadow:0 2px 12px rgba(196,26,26,0.12);}
+.kpi-card::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;background:radial-gradient(circle,rgba(196,26,26,0.05),transparent);pointer-events:none;}
+.kpi-label{font-size:12px;color:var(--text2);transition:color .4s;}
+.kpi-value{font-size:22px;font-weight:bold;color:var(--text);margin:2px 0 0;font-family:'Consolas','Microsoft YaHei',sans-serif;line-height:1;transition:color .4s;}
+.kpi-change{font-size:11px;font-weight:600;}
+.kpi-change.up{color:var(--accent);}
+.kpi-change.down{color:var(--green);}
+.kpi-change.neutral{color:var(--text3);}
+/* ===== BRANCH TABLES ===== */
+.branch-section{display:flex;gap:12px;padding:0 20px 18px;flex-shrink:0;}
+.branch-panel{flex:1;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:var(--panel-shadow);position:relative;animation:panelIn .5s ease-out;transition:all .4s;}
+.branch-panel::before,.branch-panel::after{content:'';position:absolute;width:12px;height:12px;pointer-events:none;}
+.branch-panel::before{top:0;left:0;border-top:2px solid rgba(196,26,26,0.4);border-left:2px solid rgba(196,26,26,0.4);border-radius:8px 0 0 0;}
+.branch-panel::after{bottom:0;right:0;border-bottom:2px solid rgba(196,26,26,0.4);border-right:2px solid rgba(196,26,26,0.4);border-radius:0 0 8px 0;}
+.branch-panel-header{padding:8px 16px;font-size:14px;font-weight:bold;display:flex;align-items:center;gap:8px;flex-shrink:0;color:var(--text);transition:color .4s;}
+.branch-panel-header::before{content:'';width:4px;height:14px;background:var(--accent);border-radius:2px;flex-shrink:0;}
+.branch-total-tag{margin-left:auto;font-size:12px;font-weight:normal;color:var(--text2);transition:color .4s;}
+.branch-total-tag b{color:var(--text);font-size:14px;font-family:'Consolas','Microsoft YaHei',sans-serif;transition:color .4s;}
+.branch-table-wrap{flex:1;overflow-y:auto;padding:0 8px 8px;}
+.branch-table-wrap::-webkit-scrollbar{width:4px;}
+.branch-table-wrap::-webkit-scrollbar-track{background:transparent;}
+.branch-table-wrap::-webkit-scrollbar-thumb{background:rgba(196,26,26,0.25);border-radius:2px;}
+.branch-table{width:100%;border-collapse:collapse;font-size:13px;}
+.branch-table thead th{position:sticky;top:0;background:var(--th-bg);padding:6px 4px;text-align:center;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);z-index:1;font-size:12px;transition:all .4s;}
+.branch-table tbody td{padding:4px 4px;text-align:center;color:var(--text);border-bottom:1px solid var(--border2);font-family:'Consolas','Microsoft YaHei',sans-serif;transition:all .4s;}
+.branch-table tbody tr:hover{background:var(--row-hover);}
+.td-name{text-align:left!important;padding-left:8px!important;font-weight:600;font-family:'Microsoft YaHei',sans-serif!important;font-size:13px!important;}
+.td-rank{width:22px;text-align:center;font-size:12px;color:var(--text3);font-family:inherit!important;}
+.bar-cell{position:relative;height:18px;display:flex;align-items:center;}
+.bar-bg{position:absolute;left:0;top:50%;transform:translateY(-50%);height:13px;background:linear-gradient(90deg,var(--bar-bg),rgba(196,26,26,0.03));border-radius:3px;pointer-events:none;transition:background .4s;}
+.bar-val{position:relative;z-index:1;font-size:13px;padding-left:4px;}
+.diff-up{color:var(--accent);font-size:11px;margin-left:2px;}
+.diff-down{color:var(--green);font-size:11px;margin-left:2px;}
+.wz-tag{display:inline-block;font-size:10px;padding:1px 4px;border-radius:3px;margin-left:3px;vertical-align:middle;font-weight:600;}
+.wz-shiqu{background:rgba(196,26,26,0.12);color:#e74c3c;}
+.wz-jinjiao{background:rgba(52,152,219,0.12);color:#5dade2;}
+.wz-yuanjiao{background:rgba(46,204,113,0.12);color:#2ecc71;}
+.wz-group-row td{background:var(--wz-row-bg)!important;color:var(--orange)!important;font-weight:700!important;font-family:'Microsoft YaHei',sans-serif!important;font-size:13px!important;border-top:1px solid rgba(196,26,26,0.25)!important;padding:5px 4px!important;transition:all .4s;}
+.rate-val{font-size:13px;}
+.rate-over{color:var(--accent);}
+.rate-under{color:var(--green);}
+/* ===== LIGHT MODE OVERRIDES ===== */
+body.light .wz-shiqu{background:rgba(196,26,26,0.08);color:#C41A1A;}
+body.light .wz-jinjiao{background:rgba(52,152,219,0.08);color:#1677ff;}
+body.light .wz-yuanjiao{background:rgba(46,204,113,0.08);color:#1a9a5a;}
+body.light .panel::before,body.light .branch-panel::before{border-color:rgba(196,26,26,0.2);}
+body.light .panel::after,body.light .branch-panel::after{border-color:rgba(196,26,26,0.2);}
+body.light .wz-group-row td{background:rgba(196,26,26,0.04)!important;color:#d48806!important;}
+</style>
+</head>
+<body>
+<div id="screen">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-accent"></div>
+      <div><div class="header-title">北京电信宽带26年1-7月发展大屏</div><div class="header-subtitle">全渠中心销售推广部 · 数据可视化平台</div></div>
+    </div>
+    <div class="header-right">
+      <button id="themeBtn" class="theme-btn">浅色模式</button>
+      <button id="exportBtn" class="export-btn">导出截图</button>
+      <div class="clock-box"><span id="clock"></span></div>
+    </div>
+  </div>
+  <div class="cumulative-bar">
+    <div class="cum-card"><div class="cum-dot" style="background:#C41A1A"></div><div class="cum-info"><div class="cum-label">截止<span class="cum-month-num">7</span>月 家宽累计</div><div class="cum-value" id="cum-home">0户</div></div></div>
+    <div class="cum-card"><div class="cum-dot" style="background:#3498db"></div><div class="cum-info"><div class="cum-label">截止<span class="cum-month-num">7</span>月 千兆累计</div><div class="cum-value" id="cum-gigabit">0户</div></div></div>
+    <div class="cum-card"><div class="cum-dot" style="background:#e74c3c"></div><div class="cum-info"><div class="cum-label">截止<span class="cum-month-num">7</span>月 融合累计</div><div class="cum-value" id="cum-fusion">0户</div></div></div>
+    <div class="cum-card"><div class="cum-dot" style="background:#5dade2"></div><div class="cum-info"><div class="cum-label">截止<span class="cum-month-num">7</span>月 FTTR累计</div><div class="cum-value" id="cum-fttr">0户</div></div></div>
+    <div class="cum-card"><div class="cum-dot" style="background:#f5a623"></div><div class="cum-info"><div class="cum-label">截止<span class="cum-month-num">7</span>月 智屏累计</div><div class="cum-value" id="cum-screen">0户</div></div></div>
+  </div>
+  <div class="month-selector">
+    <span class="selector-label">月份选择</span>
+    <button class="month-btn" data-month="0">1月</button><button class="month-btn" data-month="1">2月</button><button class="month-btn" data-month="2">3月</button><button class="month-btn" data-month="3">4月</button><button class="month-btn" data-month="4">5月</button><button class="month-btn" data-month="5">6月</button><button class="month-btn active" data-month="6">7月</button>
+  </div>
+  <div class="section-divider"></div>
+
+  <!-- Row 1: Overview -->
+  <div class="row" style="height:300px;">
+    <div class="col" style="width:28%;">
+      <div class="kpi-grid">
+        <div class="kpi-card" style="border-left-color:#C41A1A"><div class="kpi-label">家宽日均</div><div class="kpi-value" id="kpiHome">0.0</div><div class="kpi-change neutral" id="kpiHomeChange">—</div></div>
+        <div class="kpi-card" style="border-left-color:#f5a623"><div class="kpi-label">智屏日均</div><div class="kpi-value" id="kpiScreen">0.0</div><div class="kpi-change neutral" id="kpiScreenChange">—</div></div>
+        <div class="kpi-card" style="border-left-color:#3498db"><div class="kpi-label">FTTR日均</div><div class="kpi-value" id="kpiFttr">0.0</div><div class="kpi-change neutral" id="kpiFttrChange">—</div></div>
+        <div class="kpi-card" style="border-left-color:#e74c3c"><div class="kpi-label">家宽完成率</div><div class="kpi-value" id="kpiRate">0.0%</div><div class="kpi-change neutral" id="kpiRateChange">—</div></div>
+      </div>
+      <div class="panel" style="flex:1"><div class="panel-header">三大业务完成率趋势</div><div id="rateTrendChart" class="chart"></div></div>
+    </div>
+    <div class="col" style="width:44%;"><div class="panel" style="height:300px;flex-shrink:0"><div class="panel-header">三大业务月度发展趋势</div><div id="trendChart" class="chart"></div></div></div>
+    <div class="col" style="width:28%;"><div class="panel" style="height:300px;flex-shrink:0"><div class="panel-header">各战区发展对比</div><div id="warzoneChart" class="chart"></div></div></div>
+  </div>
+  <div class="section-divider"></div>
+
+  <!-- Row 2: 分产品 - 维度1 融合vs单宽 -->
+  <div class="row" style="height:220px;">
+    <div class="panel" style="width:55%;"><div class="panel-header">分产品趋势（融合 vs 单宽）</div><div id="productBarChart" class="chart"></div></div>
+    <div class="panel" style="width:45%;"><div class="panel-header">融合/单宽结构（当月）</div><div id="productPieChart" class="chart"></div></div>
+  </div>
+
+  <!-- Row 3: 分产品 - 维度2 产品分类 -->
+  <div class="row" style="height:220px;">
+    <div class="panel" style="width:55%;"><div class="panel-header">分产品类趋势（元气99+/元气99-/职场融宽/老C加宽/其他融合/单宽/集约）</div><div id="categoryBarChart" class="chart"></div></div>
+    <div class="panel" style="width:45%;"><div class="panel-header">产品分类占比（当月）</div><div id="categoryPieChart" class="chart"></div></div>
+  </div>
+  <div class="section-divider"></div>
+
+  <!-- Row 4: 分渠道 -->
+  <div class="row" style="height:220px;">
+    <div class="panel" style="width:55%;"><div class="panel-header">分渠道销量（当月日均）</div><div id="channelBarChart" class="chart"></div></div>
+    <div class="panel" style="width:45%;"><div class="panel-header">分渠道占比（当月）</div><div id="channelPieChart" class="chart"></div></div>
+  </div>
+  <div class="section-divider"></div>
+
+  <!-- Row 5: 分公司明细 -->
+  <div class="branch-section">
+    <div class="branch-panel">
+      <div class="branch-panel-header">家宽各分公司发展情况<span class="branch-total-tag">当月合计 <b id="totalHome">0</b></span></div>
+      <div class="branch-table-wrap"><table class="branch-table"><thead><tr><th>#</th><th>分公司</th><th>当月日均</th><th>上月日均</th><th>完成率</th><th>累计</th></tr></thead><tbody id="branchHomeBody"></tbody></table></div>
+    </div>
+    <div class="branch-panel">
+      <div class="branch-panel-header">FTTR各分公司发展情况<span class="branch-total-tag">当月合计 <b id="totalFttr">0</b></span></div>
+      <div class="branch-table-wrap"><table class="branch-table"><thead><tr><th>#</th><th>分公司</th><th>当月日均</th><th>上月日均</th><th>累计</th></tr></thead><tbody id="branchFttrBody"></tbody></table></div>
+    </div>
+    <div class="branch-panel">
+      <div class="branch-panel-header">智屏各分公司发展情况<span class="branch-total-tag">当月合计 <b id="totalScreen">0</b></span></div>
+      <div class="branch-table-wrap"><table class="branch-table"><thead><tr><th>#</th><th>分公司</th><th>当月日均</th><th>上月日均</th><th>累计</th></tr></thead><tbody id="branchScreenBody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var DATA = {
+  months: ["1月","2月","3月","4月","5月","6月","7月"],
+  days: [31,28,31,30,31,30,31],
+  homeNew:    [289.6,195.6,380.1,343.1,341.8,366.2,417.8],
+  gigabitNew: [89.5,57.9,102.9,96.3,95.5,114.3,129.2],
+  fusion:     [163.4,103.4,188.5,180.5,172.7,189.7,207.9],
+  single:     [126.2,92.2,191.6,162.7,169.1,176.5,209.9],
+  smartScreen:[25.3,33.9,58.9,78.1,78.6,79.7,92.7],
+  fttr:       [14.0,16.7,27.5,43.1,54.7,70.4,90.2],
+  homeRate:   [81.7,70.3,80.7,85.2,85.8,83.2,96.2],
+  smartRate:  [47.2,63.2,109.8,145.6,146.6,148.8,172.9],
+  fttrRate:   [17.3,20.7,34.2,53.5,67.9,93.8,120.3],
+  warzone: [
+    {home:{city:160.3,suburb:116.0,far:13.2},screen:{city:12.5,suburb:10.1,far:2.8},fttr:{city:6.8,suburb:4.4,far:2.7}},
+    {home:{city:106.8,suburb:79.0,far:9.6},screen:{city:19.8,suburb:10.9,far:3.2},fttr:{city:9.6,suburb:3.9,far:2.7}},
+    {home:{city:212.2,suburb:149.6,far:18.3},screen:{city:33.6,suburb:19.5,far:6.1},fttr:{city:16.0,suburb:8.5,far:2.1}},
+    {home:{city:187.2,suburb:135.1,far:20.9},screen:{city:42.1,suburb:27.1,far:9.0},fttr:{city:22.5,suburb:17.0,far:3.7}},
+    {home:{city:189.3,suburb:133.7,far:18.6},screen:{city:43.8,suburb:24.0,far:10.7},fttr:{city:34.6,suburb:15.7,far:4.4}},
+    {home:{city:200.9,suburb:148.4,far:16.9},screen:{city:43.3,suburb:25.9,far:10.4},fttr:{city:44.5,suburb:21.2,far:4.7}},
+    {home:{city:236.2,suburb:161.3,far:20.3},screen:{city:55.9,suburb:29.6,far:7.0},fttr:{city:54.9,suburb:32.1,far:3.2}}
+  ],
+  channels: [
+    {"自有人员自发展":123.8,"集约":29.4,"万号":62.6,"电信到家":15.5,"线上其他":21.1,"泛渠道":14.9,"社区":20.5,"商圈大连锁":1.8},
+    {"自有人员自发展":81.4,"集约":22.3,"万号":40.8,"电信到家":8.8,"线上其他":16.9,"泛渠道":12.4,"社区":11.8,"商圈大连锁":1.1},
+    {"自有人员自发展":147.0,"集约":49.9,"万号":74.1,"电信到家":16.6,"线上其他":35.5,"泛渠道":25.7,"社区":21.7,"商圈大连锁":9.3},
+    {"自有人员自发展":137.3,"集约":39.9,"万号":62.9,"电信到家":15.2,"线上其他":30.6,"泛渠道":27.4,"社区":17.0,"商圈大连锁":12.8},
+    {"自有人员自发展":124.2,"集约":47.4,"万号":65.7,"电信到家":15.8,"线上其他":30.3,"泛渠道":30.8,"社区":16.0,"商圈大连锁":11.5},
+    {"自有人员自发展":140.2,"集约":50.0,"万号":62.5,"电信到家":19.2,"线上其他":34.3,"泛渠道":32.3,"社区":15.5,"商圈大连锁":12.3},
+    {"自有人员自发展":156.5,"集约":76.4,"万号":50.4,"电信到家":35.1,"线上其他":33.7,"泛渠道":37.0,"社区":16.2,"商圈大连锁":12.5}
+  ],
+  categories: {
+    "元气99及以上": [0.9,0,12.8,21.6,21.5,36.3,45.6],
+    "元气99以下":   [0,0,0,0,0,0,0],
+    "职场融宽":     [36.0,22.0,34.3,31.4,28.9,27.8,32.0],
+    "老C加宽及二宽": [100.3,64.7,106.7,89.6,87.6,93.3,95.5],
+    "其他融合":     [25.9,16.6,29.1,23.2,19.0,17.9,17.9],
+    "单宽":         [97.1,70.0,141.6,123.0,121.7,126.5,133.5],
+    "集约":         [29.4,22.3,49.9,39.9,47.4,50.0,76.4]
+  },
+  categoryColors: {"元气99及以上":"#e74c3c","元气99以下":"#c0392b","职场融宽":"#f5a623","老C加宽及二宽":"#e67e22","其他融合":"#3498db","单宽":"#2ecc71","集约":"#9b59b6"},
+  branchHome: {
+    "东城":[35.0,25.6,47.8,44.5,46.7,45.3,57.9],"西城":[15.5,11.7,22.5,19.4,19.4,21.5,24.4],
+    "朝阳":[26.3,17.0,36.4,32.2,30.5,31.9,36.3],"丰台":[35.9,22.9,49.1,41.6,40.9,46.0,53.1],
+    "通州":[25.9,17.3,33.5,28.6,29.7,31.2,35.8],"海淀":[21.7,12.3,22.9,20.9,22.1,25.0,28.7],
+    "昌平":[35.1,23.4,48.8,41.5,42.3,46.8,53.9],"大兴":[29.7,20.6,36.5,34.7,33.2,36.6,36.6],
+    "顺义":[19.0,14.6,26.6,23.8,23.3,24.2,30.7],"房山":[15.9,9.9,19.1,18.3,17.6,19.9,20.3],
+    "门头沟":[16.3,10.5,18.6,16.8,17.3,20.9,19.8],"延庆":[5.8,4.5,7.3,7.5,6.3,5.3,7.3],
+    "平谷":[1.8,1.9,3.4,5.1,4.3,3.8,4.5],"密云":[3.6,2.0,4.5,5.0,5.0,4.2,4.8],"怀柔":[2.0,1.2,3.1,3.3,3.0,3.6,3.7]
+  },
+  branchFttr: {
+    "东城":[2.1,1.6,2.6,3.8,7.2,7.6,8.4],"西城":[0.5,2.5,2.0,3.1,4.3,4.4,5.5],
+    "朝阳":[2.6,3.0,4.8,6.4,9.2,10.5,15.2],"丰台":[0.6,1.3,3.0,4.4,5.2,10.7,11.6],
+    "通州":[0.7,0.7,1.7,2.9,3.4,6.0,7.5],"海淀":[0.3,0.5,1.9,1.9,5.3,5.3,6.7],
+    "昌平":[0.5,0.5,2.4,2.9,3.3,6.5,8.7],"大兴":[0.3,0.4,1.5,3.2,2.7,3.2,6.0],
+    "顺义":[2.6,1.8,1.2,5.3,4.4,4.9,4.8],"房山":[0.5,0.8,1.9,2.8,2.8,3.0,7.1],
+    "门头沟":[0.5,0.4,1.5,2.8,2.5,3.6,5.5],"延庆":[1.7,1.5,0.5,0.8,1.4,1.8,0.8],
+    "平谷":[0.5,0.3,0.4,1.0,1.2,1.0,0.7],"密云":[0.4,0.8,0.6,1.2,1.2,1.1,0.8],"怀柔":[0.1,0.1,0.6,0.7,0.6,0.8,0.9]
+  },
+  branchScreen: {
+    "东城":[2.5,3.1,6.0,7.6,9.9,9.6,12.7],"西城":[1.3,3.8,4.4,5.3,5.1,5.0,6.0],
+    "朝阳":[4.2,5.7,7.5,9.7,10.4,12.5,15.2],"丰台":[2.0,3.8,7.1,8.5,7.8,8.2,9.5],
+    "通州":[1.5,2.2,4.0,5.7,3.7,2.9,2.9],"海淀":[1.0,1.2,4.6,5.3,6.9,5.1,9.6],
+    "昌平":[1.7,1.5,4.5,5.8,5.8,6.0,6.1],"大兴":[1.2,1.3,2.8,4.5,3.6,3.3,4.7],
+    "顺义":[3.0,3.5,4.4,4.9,5.0,6.9,6.2],"房山":[2.7,3.1,4.9,5.7,4.6,3.9,6.5],
+    "门头沟":[1.5,1.5,2.9,6.2,5.0,5.8,6.1],"延庆":[1.5,2.2,2.6,3.7,3.3,3.3,1.6],
+    "平谷":[0.2,0.3,1.1,2.3,3.7,2.9,2.1],"密云":[0.7,0.5,1.0,1.5,1.3,1.4,1.0],"怀柔":[0.4,0.2,1.4,1.5,2.4,2.8,2.3]
+  },
+  branchHomeRate: {
+    "东城":[71.2,66.6,73.0,78.8,84.1,73.9,95.5],"西城":[66.0,63.6,76.5,76.1,77.2,78.0,89.7],
+    "朝阳":[79.4,65.5,101.5,104.8,102.5,98.8,115.8],"丰台":[78.1,63.7,75.3,74.1,74.2,75.6,88.2],
+    "通州":[87.8,74.9,79.2,78.6,83.0,78.9,91.6],"海淀":[111.9,81.0,86.1,90.8,97.3,100.2,116.9],
+    "昌平":[96.3,81.8,94.6,94.9,97.2,96.7,112.7],"大兴":[96.6,85.5,91.1,102.0,98.1,97.0,98.2],
+    "顺义":[89.4,87.5,88.9,93.9,92.1,85.8,110.3],"房山":[81.0,64.0,74.4,84.1,81.4,82.7,85.5],
+    "门头沟":[79.0,64.9,66.6,70.9,73.2,79.7,76.6],"延庆":[77.5,75.4,73.2,90.0,75.0,57.0,79.9],
+    "平谷":[28.4,38.4,42.6,75.8,63.7,50.3,60.4],"密云":[53.3,37.6,51.5,66.6,66.4,50.5,58.4],
+    "怀柔":[44.3,32.5,70.8,89.7,82.0,89.6,97.4]
+  },
+  wzMap: {"东城":"市区","西城":"市区","朝阳":"市区","丰台":"市区","通州":"市区","海淀":"市区","昌平":"近郊","大兴":"近郊","顺义":"近郊","门头沟":"近郊","房山":"近郊","延庆":"远郊","平谷":"远郊","密云":"远郊","怀柔":"远郊"},
+  wzOrder: {"市区":1,"近郊":2,"远郊":3}
+};
+
+var currentMonth = 6;
+var charts = {};
+var isLight = false;
+
+function calcCumulative(idx){var h=0,g=0,f=0,ft=0,s=0;for(var i=0;i<=idx;i++){h+=DATA.homeNew[i]*DATA.days[i];g+=DATA.gigabitNew[i]*DATA.days[i];f+=DATA.fusion[i]*DATA.days[i];ft+=DATA.fttr[i]*DATA.days[i];s+=DATA.smartScreen[i]*DATA.days[i];}return{home:h,gigabit:g,fusion:f,fttr:ft,screen:s};}
+function calcMoM(c,p){return p===0?0:((c-p)/p)*100;}
+function niceMax(val,f){if(!f)f=1.1;if(val<=0)return 10;var s=val*f,m=Math.pow(10,Math.floor(Math.log10(s))),n=s/m,r;if(n<=1)r=1;else if(n<=1.5)r=1.5;else if(n<=2)r=2;else if(n<=3)r=3;else if(n<=5)r=5;else if(n<=7)r=7;else r=10;return r*m;}
+function animateValue(el,start,end,dur,fmt){var t0=performance.now();function step(t){var p=Math.min((t-t0)/dur,1);var e=1-Math.pow(1-p,3);el.textContent=fmt?fmt(start+(end-start)*e):Math.round(start+(end-start)*e).toLocaleString();if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
+function sortObjByVal(obj,asc){return Object.entries(obj).sort(function(a,b){return asc?a[1]-b[1]:b[1]-a[1];});}
+function num(el){return parseFloat(el.textContent.replace(/[^0-9.-]/g,''))||0;}
+function calcBranchCum(vals,idx){var s=0;for(var i=0;i<=idx;i++)s+=vals[i]*DATA.days[i];return s;}
+
+// Dynamic theme-aware chart colors
+function getAxisLine(){return{lineStyle:{color:isLight?'#d0d5dd':'#1a3a6c'}};}
+function getAxisLabel(){return{color:isLight?'#5a6778':'#8a9bb0',fontSize:11,fontFamily:'Microsoft YaHei,sans-serif'};}
+function getSplitLine(){return{lineStyle:{color:isLight?'rgba(0,0,0,0.06)':'rgba(26,58,108,0.15)',type:'dashed'}};}
+function getLegendBase(){return{textStyle:{color:isLight?'#1a2332':'#e0e6ed',fontSize:11},itemWidth:12,itemHeight:8,top:6,right:15};}
+function getTooltipBase(){return{backgroundColor:isLight?'rgba(255,255,255,0.96)':'rgba(10,22,40,0.95)',borderColor:isLight?'#d0d5dd':'#1a3a6c',borderWidth:1,textStyle:{color:isLight?'#1a2332':'#e0e6ed',fontSize:12},axisPointer:{type:'shadow',shadowStyle:{color:isLight?'rgba(0,0,0,0.04)':'rgba(26,58,108,0.15)'}}};}
+function getLabelColor(){return isLight?'#1a2332':'#e0e6ed';}
+
+// ===== CHART OPTIONS =====
+function rateTrendOption(){var m=currentMonth,ms=DATA.months.slice(0,m+1);return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{...getLegendBase(),data:['家宽完成率','智屏完成率','FTTR完成率']},grid:{left:48,right:22,top:38,bottom:25},xAxis:{type:'category',data:ms,axisLine:getAxisLine(),axisLabel:getAxisLabel()},yAxis:{type:'value',axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),formatter:'{value}%'},splitLine:getSplitLine(),min:0,max:niceMax(Math.max(...DATA.smartRate.slice(0,m+1)),1.15)},series:[{name:'家宽完成率',type:'line',smooth:true,symbol:'circle',symbolSize:5,data:DATA.homeRate.slice(0,m+1),itemStyle:{color:'#C41A1A'},lineStyle:{width:2,color:'#C41A1A'},areaStyle:{opacity:.12,color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(196,26,26,0.4)'},{offset:1,color:'rgba(196,26,26,0)'}])},markLine:{silent:true,symbol:'none',lineStyle:{color:'#2ecc71',type:'dashed',width:1},data:[{yAxis:100,label:{formatter:'100%',color:'#2ecc71',fontSize:10}}]}},{name:'智屏完成率',type:'line',smooth:true,symbol:'circle',symbolSize:5,data:DATA.smartRate.slice(0,m+1),itemStyle:{color:'#f5a623'},lineStyle:{width:2,color:'#f5a623'},areaStyle:{opacity:.12,color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(245,166,35,0.4)'},{offset:1,color:'rgba(245,166,35,0)'}])}},{name:'FTTR完成率',type:'line',smooth:true,symbol:'circle',symbolSize:5,data:DATA.fttrRate.slice(0,m+1),itemStyle:{color:'#3498db'},lineStyle:{width:2,color:'#3498db'},areaStyle:{opacity:.12,color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(52,152,219,0.4)'},{offset:1,color:'rgba(52,152,219,0)'}])}}]};}
+
+function trendOption(){var m=currentMonth,ms=DATA.months.slice(0,m+1);return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{...getLegendBase(),data:['家宽日均','智屏日均','FTTR日均']},grid:{left:60,right:60,top:38,bottom:28},xAxis:{type:'category',data:ms,axisLine:getAxisLine(),axisLabel:getAxisLabel(),axisTick:{lineStyle:{color:isLight?'#d0d5dd':'#1a3a6c'}},boundaryGap:false},yAxis:[{type:'value',name:'家宽',nameTextStyle:{color:'#C41A1A',fontSize:10},axisLine:{lineStyle:{color:'#C41A1A'}},axisLabel:getAxisLabel(),splitLine:getSplitLine(),min:0,max:niceMax(Math.max(...DATA.homeNew.slice(0,m+1)),1.15)},{type:'value',name:'智屏/FTTR',nameTextStyle:{color:'#f5a623',fontSize:10},axisLine:{lineStyle:{color:'#f5a623'}},axisLabel:getAxisLabel(),splitLine:{show:false},min:0,max:niceMax(Math.max(...DATA.smartScreen.slice(0,m+1)),1.2)}],series:[{name:'家宽日均',type:'line',smooth:true,symbol:'circle',symbolSize:6,yAxisIndex:0,data:DATA.homeNew.slice(0,m+1),itemStyle:{color:'#C41A1A'},lineStyle:{width:2.5,color:'#C41A1A'},areaStyle:{opacity:.15,color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(196,26,26,0.4)'},{offset:1,color:'rgba(196,26,26,0)'}])}},{name:'智屏日均',type:'line',smooth:true,symbol:'circle',symbolSize:5,yAxisIndex:1,data:DATA.smartScreen.slice(0,m+1),itemStyle:{color:'#f5a623'},lineStyle:{width:2,color:'#f5a623'},areaStyle:{opacity:.12,color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(245,166,35,0.35)'},{offset:1,color:'rgba(245,166,35,0)'}])}},{name:'FTTR日均',type:'line',smooth:true,symbol:'circle',symbolSize:5,yAxisIndex:1,data:DATA.fttr.slice(0,m+1),itemStyle:{color:'#3498db'},lineStyle:{width:2,color:'#3498db'},areaStyle:{opacity:.12,color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(52,152,219,0.35)'},{offset:1,color:'rgba(52,152,219,0)'}])}}]};}
+
+function warzoneOption(){var m=currentMonth,wz=DATA.warzone[m];return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{...getLegendBase(),data:['家宽','智屏','FTTR']},grid:{left:45,right:20,top:38,bottom:25},xAxis:{type:'category',data:['市区','近郊','远郊'],axisLine:getAxisLine(),axisLabel:getAxisLabel()},yAxis:{type:'value',axisLine:getAxisLine(),axisLabel:getAxisLabel(),splitLine:getSplitLine()},series:[{name:'家宽',type:'bar',barWidth:'20%',data:[wz.home.city,wz.home.suburb,wz.home.far],itemStyle:{color:'#C41A1A',borderRadius:[3,3,0,0]},label:{show:true,position:'top',color:getLabelColor(),fontSize:10,formatter:function(p){return p.value.toFixed(1);}}},{name:'智屏',type:'bar',barWidth:'20%',data:[wz.screen.city,wz.screen.suburb,wz.screen.far],itemStyle:{color:'#f5a623',borderRadius:[3,3,0,0]},label:{show:true,position:'top',color:getLabelColor(),fontSize:10,formatter:function(p){return p.value.toFixed(1);}}},{name:'FTTR',type:'bar',barWidth:'20%',data:[wz.fttr.city,wz.fttr.suburb,wz.fttr.far],itemStyle:{color:'#3498db',borderRadius:[3,3,0,0]},label:{show:true,position:'top',color:getLabelColor(),fontSize:10,formatter:function(p){return p.value.toFixed(1);}}}]};}
+
+function productBarOption(){var m=currentMonth,ms=DATA.months.slice(0,m+1);return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{...getLegendBase(),data:['融合','单宽']},grid:{left:55,right:30,top:38,bottom:25},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:getAxisLabel(),splitLine:getSplitLine()},yAxis:{type:'category',data:ms.slice().reverse(),axisLine:getAxisLine(),axisLabel:getAxisLabel(),axisTick:{show:false}},series:[{name:'融合',type:'bar',stack:'t',barWidth:'50%',data:DATA.fusion.slice(0,m+1).reverse(),itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(196,26,26,0.5)'},{offset:1,color:'rgba(196,26,26,0.9)'}])},label:{show:true,position:'insideRight',color:'#fff',fontSize:10,formatter:function(p){return p.value.toFixed(1);}}},{name:'单宽',type:'bar',stack:'t',barWidth:'50%',data:DATA.single.slice(0,m+1).reverse(),itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(52,152,219,0.5)'},{offset:1,color:'rgba(52,152,219,0.9)'}]),borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:isLight?'#5a6778':'#8a9bb0',fontSize:10,formatter:function(p){return p.value.toFixed(1);}}}]};}
+
+function productPieOption(){var m=currentMonth,f=DATA.fusion[m],s=DATA.single[m];return{tooltip:{...getTooltipBase(),trigger:'item'},legend:{...getLegendBase(),bottom:8,left:'center',top:'auto'},series:[{type:'pie',radius:['35%','60%'],center:['50%','45%'],data:[{value:f,name:'融合',itemStyle:{color:'#C41A1A'}},{value:s,name:'单宽',itemStyle:{color:'#3498db'}}],label:{color:getLabelColor(),fontSize:12,formatter:function(p){return p.name+'\n'+p.percent+'%';}},labelLine:{lineStyle:{color:isLight?'#d0d5dd':'#3a5070'}},emphasis:{itemStyle:{shadowBlur:15,shadowColor:'rgba(196,26,26,0.3)'}},animationDuration:800}]};}
+
+function categoryBarOption(){var m=currentMonth,ms=DATA.months.slice(0,m+1);var cats=Object.entries(DATA.categories).filter(function(e){var hasVal=e[1].some(function(v,i){return i<=m&&v>0;});return hasVal;});cats.sort(function(a,b){return b[1][m]-a[1][m];});return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{textStyle:{color:getLabelColor(),fontSize:10},itemWidth:10,itemHeight:8,top:6,right:10,type:'scroll'},grid:{left:55,right:25,top:36,bottom:25},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:getAxisLabel(),splitLine:getSplitLine()},yAxis:{type:'category',data:ms.slice().reverse(),axisLine:getAxisLine(),axisLabel:getAxisLabel(),axisTick:{show:false}},series:cats.map(function(c){return{name:c[0],type:'bar',stack:'cat',barWidth:'50%',data:c[1].slice(0,m+1).reverse(),itemStyle:{color:DATA.categoryColors[c[0]]||'#888'},label:{show:true,position:'insideRight',color:'#fff',fontSize:9,formatter:function(p){return p.value>0?p.value.toFixed(1):'';}}};})};}
+
+function categoryPieOption(){var m=currentMonth;var cats=Object.entries(DATA.categories).filter(function(e){return e[1][m]>0;});cats.sort(function(a,b){return b[1][m]-a[1][m];});return{tooltip:{...getTooltipBase(),trigger:'item'},legend:{textStyle:{color:getLabelColor(),fontSize:10},itemWidth:10,itemHeight:8,bottom:5,left:'center',top:'auto',type:'scroll'},series:[{type:'pie',radius:['30%','58%'],center:['50%','45%'],data:cats.map(function(c){return{value:c[1][m],name:c[0],itemStyle:{color:DATA.categoryColors[c[0]]||'#888'}};}),label:{color:getLabelColor(),fontSize:10,formatter:function(p){return p.name+' '+p.percent+'%';}},labelLine:{lineStyle:{color:isLight?'#d0d5dd':'#3a5070'}},emphasis:{itemStyle:{shadowBlur:15,shadowColor:'rgba(196,26,26,0.3)'}},animationDuration:800}]};}
+
+function channelBarOption(){var m=currentMonth,ch=DATA.channels[m],sorted=sortObjByVal(ch,false);return{tooltip:{...getTooltipBase(),trigger:'axis'},grid:{left:110,right:45,top:10,bottom:10},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:getAxisLabel(),splitLine:getSplitLine()},yAxis:{type:'category',data:sorted.map(function(e){return e[0];}).reverse(),axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:11},axisTick:{show:false}},series:[{type:'bar',barWidth:'55%',data:sorted.map(function(e){return e[1];}).reverse(),itemStyle:{color:function(p){var idx=sorted.length-1-p.dataIndex;if(idx<2)return '#C41A1A';if(idx<4)return '#f5a623';return '#3498db';},borderRadius:[0,3,3,0]},label:{show:true,position:'right',color:getLabelColor(),fontSize:10,formatter:function(p){return p.value.toFixed(1);}}}]};}
+
+function channelPieOption(){var m=currentMonth,ch=DATA.channels[m],sorted=sortObjByVal(ch,false);var colors=['#C41A1A','#e74c3c','#f5a623','#5dade2','#3498db','#2ecc71','#9b59b6','#1abc9c'];return{tooltip:{...getTooltipBase(),trigger:'item'},legend:{textStyle:{color:getLabelColor(),fontSize:10},itemWidth:10,itemHeight:8,bottom:5,left:'center',top:'auto',type:'scroll'},series:[{type:'pie',radius:['30%','58%'],center:['50%','45%'],data:sorted.map(function(e,i){return{value:e[1],name:e[0],itemStyle:{color:colors[i%colors.length]}};}),label:{color:getLabelColor(),fontSize:10,formatter:function(p){return p.name+' '+p.percent+'%';}},labelLine:{lineStyle:{color:isLight?'#d0d5dd':'#3a5070'}},emphasis:{itemStyle:{shadowBlur:15,shadowColor:'rgba(196,26,26,0.3)'}},animationDuration:800}]};}
+
+// ===== BRANCH TABLES =====
+function updateBranchTable(containerId,companyData,totalElId,rateData){
+  var m=currentMonth,prev=m>0?m-1:m;
+  var entries=Object.entries(companyData).map(function(entry){
+    var name=entry[0],vals=entry[1];
+    return{name:name,wz:DATA.wzMap[name],wzOrd:DATA.wzOrder[DATA.wzMap[name]],
+      curr:vals[m],prev:vals[prev],cum:calcBranchCum(vals,m),
+      rate:rateData?rateData[name][m]:null};
+  });
+  entries.sort(function(a,b){
+    if(a.wzOrd!==b.wzOrd)return a.wzOrd-b.wzOrd;
+    var ar=a.rate||0,br=b.rate||0;
+    return br-ar;
+  });
+  var maxVal=0;entries.forEach(function(e){if(e.curr>maxVal)maxVal=e.curr;});
+  var html='';
+  var wzGroups={'市区':[],'近郊':[],'远郊':[]};
+  entries.forEach(function(e){wzGroups[e.wz].push(e);});
+  var rank=0;
+  ['市区','近郊','远郊'].forEach(function(wz){
+    var items=wzGroups[wz];
+    var wzRate=0,cnt=0;
+    items.forEach(function(e){if(e.rate){wzRate+=e.rate;cnt++;}});
+    var wzRateStr=cnt>0?(wzRate/cnt).toFixed(1)+'%':'—';
+    html+='<tr class="wz-group-row"><td></td><td colspan="5">'+wz+'（平均完成率 '+wzRateStr+'）</td></tr>';
+    items.forEach(function(e){
+      rank++;
+      var barW=maxVal>0?Math.round(e.curr/maxVal*100):0;
+      var wzClass=e.wz==='市区'?'wz-shiqu':e.wz==='近郊'?'wz-jinjiao':'wz-yuanjiao';
+      var wzShort=e.wz==='市区'?'市':e.wz==='近郊'?'近':'远';
+      var diffStr='';
+      if(m>0){var diff=e.curr-e.prev;if(diff>=0.05)diffStr='<span class="diff-up">+'+diff.toFixed(1)+'</span>';else if(diff<=-0.05)diffStr='<span class="diff-down">'+diff.toFixed(1)+'</span>';}
+      var cumStr=e.cum>=10000?(e.cum/10000).toFixed(1)+'万':Math.round(e.cum).toLocaleString();
+      var prevStr=m>0?e.prev.toFixed(1):'—';
+      var rateStr='';
+      if(e.rate!==null&&e.rate!==undefined){rateStr='<span class="rate-val '+(e.rate>=100?'rate-over':'rate-under')+'">'+e.rate.toFixed(1)+'%</span>';}
+      else{rateStr='—';}
+      html+='<tr><td class="td-rank">'+rank+'</td><td class="td-name">'+e.name+'<span class="wz-tag '+wzClass+'">'+wzShort+'</span></td><td><div class="bar-cell"><div class="bar-bg" style="width:'+barW+'%"></div><span class="bar-val">'+e.curr.toFixed(1)+'</span></div></td><td>'+prevStr+diffStr+'</td><td>'+rateStr+'</td><td>'+cumStr+'</td></tr>';
+    });
+  });
+  document.getElementById(containerId).innerHTML=html;
+  var totalCurr=0;entries.forEach(function(e){totalCurr+=e.curr;});
+  document.getElementById(totalElId).textContent=totalCurr.toFixed(1);
+}
+
+function updateBranchTableSimple(containerId,companyData,totalElId){
+  var m=currentMonth,prev=m>0?m-1:m;
+  var entries=Object.entries(companyData).map(function(entry){
+    var name=entry[0],vals=entry[1];
+    return{name:name,wz:DATA.wzMap[name],wzOrd:DATA.wzOrder[DATA.wzMap[name]],
+      curr:vals[m],prev:vals[prev],cum:calcBranchCum(vals,m)};
+  });
+  entries.sort(function(a,b){return a.wzOrd!==b.wzOrd?a.wzOrd-b.wzOrd:b.curr-a.curr;});
+  var maxVal=0;entries.forEach(function(e){if(e.curr>maxVal)maxVal=e.curr;});
+  var html='';
+  var wzGroups={'市区':[],'近郊':[],'远郊':[]};
+  entries.forEach(function(e){wzGroups[e.wz].push(e);});
+  var rank=0;
+  ['市区','近郊','远郊'].forEach(function(wz){
+    var items=wzGroups[wz];
+    html+='<tr class="wz-group-row"><td></td><td colspan="4">'+wz+'</td></tr>';
+    items.forEach(function(e){
+      rank++;
+      var barW=maxVal>0?Math.round(e.curr/maxVal*100):0;
+      var wzClass=e.wz==='市区'?'wz-shiqu':e.wz==='近郊'?'wz-jinjiao':'wz-yuanjiao';
+      var wzShort=e.wz==='市区'?'市':e.wz==='近郊'?'近':'远';
+      var diffStr='';
+      if(m>0){var diff=e.curr-e.prev;if(diff>=0.05)diffStr='<span class="diff-up">+'+diff.toFixed(1)+'</span>';else if(diff<=-0.05)diffStr='<span class="diff-down">'+diff.toFixed(1)+'</span>';}
+      var cumStr=e.cum>=10000?(e.cum/10000).toFixed(1)+'万':Math.round(e.cum).toLocaleString();
+      var prevStr=m>0?e.prev.toFixed(1):'—';
+      html+='<tr><td class="td-rank">'+rank+'</td><td class="td-name">'+e.name+'<span class="wz-tag '+wzClass+'">'+wzShort+'</span></td><td><div class="bar-cell"><div class="bar-bg" style="width:'+barW+'%"></div><span class="bar-val">'+e.curr.toFixed(1)+'</span></div></td><td>'+prevStr+diffStr+'</td><td>'+cumStr+'</td></tr>';
+    });
+  });
+  document.getElementById(containerId).innerHTML=html;
+  var totalCurr=0;entries.forEach(function(e){totalCurr+=e.curr;});
+  document.getElementById(totalElId).textContent=totalCurr.toFixed(1);
+}
+
+// ===== UPDATE =====
+function updateCumulative(animate){var cum=calcCumulative(currentMonth);document.querySelectorAll('.cum-month-num').forEach(function(el){el.textContent=currentMonth+1;});var ids=[['cum-home','home'],['cum-gigabit','gigabit'],['cum-fusion','fusion'],['cum-fttr','fttr'],['cum-screen','screen']];ids.forEach(function(item){var el=document.getElementById(item[0]);if(animate){animateValue(el,num(el),cum[item[1]],800,function(v){return Math.round(v).toLocaleString()+'户';});}else{el.textContent=Math.round(cum[item[1]]).toLocaleString()+'户';}});}
+
+function updateKPI(){var m=currentMonth,prev=m>0?m-1:null;updateKPICard('kpiHome',DATA.homeNew[m],prev!==null?calcMoM(DATA.homeNew[m],DATA.homeNew[prev]):null,false);updateKPICard('kpiScreen',DATA.smartScreen[m],prev!==null?calcMoM(DATA.smartScreen[m],DATA.smartScreen[prev]):null,false);updateKPICard('kpiFttr',DATA.fttr[m],prev!==null?calcMoM(DATA.fttr[m],DATA.fttr[prev]):null,false);updateKPICard('kpiRate',DATA.homeRate[m],prev!==null?DATA.homeRate[m]-DATA.homeRate[prev]:null,true);}
+
+function updateKPICard(id,value,change,isPct){var vEl=document.getElementById(id),cEl=document.getElementById(id+'Change');animateValue(vEl,num(vEl),value,800,function(v){return v.toFixed(1)+(isPct?'%':'');});if(change===null){cEl.textContent='— 本月起始';cEl.className='kpi-change neutral';}else{var up=change>=0;var arrow=up?'▲':'▼';var sign=up?'+':'';var str=isPct?sign+change.toFixed(1)+'pp':sign+change.toFixed(1)+'%';cEl.textContent=arrow+' '+str;cEl.className='kpi-change '+(up?'up':'down');}}
+
+function updateAllCharts(){charts.rateTrend.setOption(rateTrendOption());charts.trend.setOption(trendOption());charts.warzone.setOption(warzoneOption());charts.productBar.setOption(productBarOption());charts.productPie.setOption(productPieOption());charts.categoryBar.setOption(categoryBarOption());charts.categoryPie.setOption(categoryPieOption());charts.channelBar.setOption(channelBarOption());charts.channelPie.setOption(channelPieOption());}
+
+function updateBranchTables(){updateBranchTable('branchHomeBody',DATA.branchHome,'totalHome',DATA.branchHomeRate);updateBranchTableSimple('branchFttrBody',DATA.branchFttr,'totalFttr');updateBranchTableSimple('branchScreenBody',DATA.branchScreen,'totalScreen');}
+
+function updateAll(animate){updateCumulative(animate);updateKPI();updateAllCharts();updateBranchTables();}
+
+function selectMonth(idx){if(idx===currentMonth)return;currentMonth=idx;document.querySelectorAll('.month-btn').forEach(function(btn,i){btn.classList.toggle('active',i===idx);});updateAll(true);}
+
+function updateClock(){var n=new Date(),p=function(v){return String(v).padStart(2,'0');};var wk=['日','一','二','三','四','五','六'][n.getDay()];document.getElementById('clock').textContent=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+' 周'+wk;}
+
+function scaleScreen(){var sw=window.innerWidth;var s=document.getElementById('screen');s.style.transform=sw<1920?'scale('+(sw/1920)+')':'none';s.style.transformOrigin='top left';}
+
+function exportScreen(){var btn=document.getElementById('exportBtn');btn.textContent='正在导出...';btn.disabled=true;var screen=document.getElementById('screen');var oT=screen.style.transform;screen.style.transform='none';html2canvas(screen,{backgroundColor:isLight?'#f0f2f5':'#0a1628',scale:1,useCORS:true,logging:false,width:1920,windowWidth:1920}).then(function(canvas){screen.style.transform=oT;scaleScreen();var link=document.createElement('a');link.download='北京电信宽带发展大屏_'+DATA.months[currentMonth]+'.png';link.href=canvas.toDataURL('image/png');link.click();btn.textContent='导出截图';btn.disabled=false;}).catch(function(){screen.style.transform=oT;scaleScreen();btn.textContent='导出截图';btn.disabled=false;});}
+
+// ===== THEME TOGGLE =====
+function toggleTheme(){
+  isLight=!isLight;
+  document.body.classList.toggle('light',isLight);
+  document.getElementById('themeBtn').textContent=isLight?'深色模式':'浅色模式';
+  // Refresh all charts with new theme colors
+  updateAllCharts();
+}
+
+window.addEventListener('load',function(){
+  document.querySelectorAll('.month-btn').forEach(function(btn){btn.addEventListener('click',function(){selectMonth(parseInt(btn.dataset.month));});});
+  document.getElementById('exportBtn').addEventListener('click',exportScreen);
+  document.getElementById('themeBtn').addEventListener('click',toggleTheme);
+  charts.rateTrend=echarts.init(document.getElementById('rateTrendChart'));
+  charts.trend=echarts.init(document.getElementById('trendChart'));
+  charts.warzone=echarts.init(document.getElementById('warzoneChart'));
+  charts.productBar=echarts.init(document.getElementById('productBarChart'));
+  charts.productPie=echarts.init(document.getElementById('productPieChart'));
+  charts.categoryBar=echarts.init(document.getElementById('categoryBarChart'));
+  charts.categoryPie=echarts.init(document.getElementById('categoryPieChart'));
+  charts.channelBar=echarts.init(document.getElementById('channelBarChart'));
+  charts.channelPie=echarts.init(document.getElementById('channelPieChart'));
+  updateAll(true);
+  updateClock();setInterval(updateClock,1000);
+  scaleScreen();window.addEventListener('resize',function(){scaleScreen();});
+  setTimeout(function(){Object.values(charts).forEach(function(c){c.resize();});},200);
+});
+</script>
+</body>
+</html>
