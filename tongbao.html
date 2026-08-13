@@ -294,7 +294,7 @@ var trendChart = null;
 var curTab = 'jiakuan';
 var curZone = 'all';
 var curBranch = 'all';
-var curGroup = 'all';
+var curGroup = 'zone';
 
 var metricMeta = {
   zhiping:{name:'智屏',short:'智屏',target_key:'target',rate_key:'rate',avg_key:'avg',target_total:0,unit:'户/日',color:'#722ED1'},
@@ -712,6 +712,7 @@ function renderRankFilter(){
   arr.querySelectorAll('button[data-group]').forEach(function(b){
     b.onclick=function(){
       curGroup=b.dataset.group;
+      if(curGroup==='zone'){rankSortKey=null;}
       renderRank();
     };
   });
