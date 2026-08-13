@@ -101,11 +101,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .trend-tip{font-size:11px;color:var(--ink3);margin-top:6px}
 
 .rank-table{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow-x:auto}
-.rank-table .row{display:grid;grid-template-columns:40px 1fr 96px 1fr 1fr 1fr 1fr;gap:6px;padding:9px 12px;align-items:center;border-bottom:1px solid var(--line);min-width:720px}
+.rank-table .row{display:grid;grid-template-columns:40px 1fr 90px 1fr 1fr 1fr 1fr 70px 70px 70px 70px 70px;gap:5px;padding:9px 10px;align-items:center;border-bottom:1px solid var(--line);min-width:1100px}
 .rank-table .row.head{background:#f7f8fa;font-size:11px;color:var(--ink3);font-weight:600;padding:8px 12px}
-.rank-table .row.head .col{text-align:right}
+.rank-table .row.head .col{text-align:right;cursor:pointer;user-select:none;white-space:nowrap}
+.rank-table .row.head .col:hover{color:var(--tel)}
 .rank-table .row.head .col.l,.rank-table .row.head .col.c{text-align:center}
 .rank-table .row.head .col.cl{text-align:left}
+.rank-table .row.head .col .arrow{font-size:9px;color:var(--ink3);margin-left:1px}
+.rank-table .row.head .col.sorted .arrow{color:var(--tel)}
 .rank-table .row.zg-header{background:linear-gradient(90deg,#fff5f6,#fff);font-size:12px;font-weight:700;color:var(--ink2);padding:8px 12px;display:flex;align-items:center;gap:8px}
 .rank-table .row.zg-header .zg-dot{width:8px;height:8px;border-radius:2px;display:inline-block}
 .rank-table .row.zg-header .zg-meta{margin-left:auto;color:var(--ink3);font-size:11px;font-weight:400}
@@ -122,6 +125,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .rank-table .zn.city{color:#722ED1;background:#f3ecff}
 .rank-table .zn.sub{color:#0c7575;background:#e0faf7}
 .rank-table .zn.far{color:#a85b00;background:#fff1e0}
+.rank-table .avg-col{text-align:right;font-family:"DIN Alternate","Arial",sans-serif}
+.rank-table .avg-col .val{font-size:13px;font-weight:700}
+.rank-table .avg-col .ll{font-size:9px;color:var(--ink3);line-height:1}
+.rank-table .avg-col .val.up{color:var(--red)}
+.rank-table .avg-col .val.down{color:var(--green)}
 .rank-table .metric{text-align:right;font-family:"DIN Alternate","Arial",sans-serif}
 .rank-table .metric .val{font-size:13px;font-weight:700}
 .rank-table .metric .ll{font-size:10px;color:var(--ink3);line-height:1}
@@ -636,6 +644,15 @@ function buildBranchRow(b,i,isLast){
     return '<div class="metric"><span class="rate-pill '+rateClass(rate)+'">'+fmt(rate,1)+'%</span>'+
            '<div class="ll" style="margin-top:2px">日均 '+fmt(avg,1)+momMini(avg,juneVal)+'</div>'+cl+bar(rate)+'</div>';
   }
+  function avgCell(val,juneVal){
+    if(!val&&val!==0)return '<div class="avg-col"><div class="val">-</div></div>';
+    var cls='';
+    if(juneVal&&juneVal>0&&val){
+      var v=(val-juneVal)/juneVal*100;
+      cls=v>=0?'up':'down';
+    }
+    return '<div class="avg-col"><div class="val '+cls+'">'+fmt(val,1)+'</div></div>';
+  }
   var qzCls=b.qianzhao.qz_ratio>=32?'up':(b.qianzhao.qz_ratio>=25?'warn':'down');
   var qzCell='<div class="metric"><span class="rate-pill '+qzCls+'">'+fmt(b.qianzhao.qz_ratio,1)+'%</span>'+
              '<div class="ll" style="margin-top:2px">日均 '+fmt(b.qianzhao.avg,1)+momMini(b.qianzhao.avg,jB.qianzhao)+'</div></div>';
@@ -647,6 +664,11 @@ function buildBranchRow(b,i,isLast){
     +cunliangCell(b.fttr.rate,b.fttr.avg,jB.fttr,b.fttr.cunliang_avg)
     +cunliangCell(b.zhiping.rate,b.zhiping.avg,jB.zhiping,b.zhiping.cunliang_avg)
     +qzCell
+    +avgCell(b.jiakuan.avg,jB.jiakuan)
+    +avgCell(b.fttr.avg,jB.fttr)
+    +avgCell(b.zhiping.avg,jB.zhiping)
+    +avgCell(b.jiakuan.ronghe_avg,0)
+    +avgCell(b.qianzhao.avg,jB.qianzhao)
     +'</div>';
 }
 function renderRankFilter(){
@@ -706,6 +728,20 @@ function renderRankFilter(){
     };
   }
 }
+// 排序状态
+var rankSortKey=null; // null=默认(家宽完成率降序), {key:'xxx', dir:'desc'|'asc'}
+var RANK_SORT_KEYS={
+  'jk_cum':'jiakuan.cum','jk_rate':'jiakuan.rate','fttr_rate':'fttr.rate',
+  'zp_rate':'zhiping.rate','qz_ratio':'qianzhao.qz_ratio',
+  'jk_avg':'jiakuan.avg','fttr_avg':'fttr.avg','zp_avg':'zhiping.avg',
+  'rh_avg':'jiakuan.ronghe_avg','qz_avg':'qianzhao.avg'
+};
+function getRankSortVal(b,key){
+  var map=RANK_SORT_KEYS[key];if(!map)return 0;
+  var parts=map.split('.');var v=b;
+  for(var i=0;i<parts.length;i++){v=(v||{})[parts[i]];}
+  return v||0;
+}
 function renderRank(){
   var d=REPORT.days[curIdx];
   renderRankFilter();
@@ -713,18 +749,36 @@ function renderRank(){
     if(curBranch!=='all')return b.branch===curBranch;
     if(curZone!=='all')return b.zone===curZone;
     return true;
-  }).sort(function(a,b){return(b.jiakuan.rate||0)-(a.jiakuan.rate||0)});
-  document.getElementById('rankMeta').textContent='共 '+arr.length+' 家分公司, 按家宽完成率降序';
+  });
+  // 排序
+  if(rankSortKey){
+    var key=rankSortKey.key,dir=rankSortKey.dir==='asc'?1:-1;
+    arr.sort(function(a,b){return(getRankSortVal(a,key)-getRankSortVal(b,key))*dir});
+  }else{
+    arr.sort(function(a,b){return(b.jiakuan.rate||0)-(a.jiakuan.rate||0)});
+  }
+  var sortLabel=rankSortKey?('按'+rankSortLabel(rankSortKey.key)+(rankSortKey.dir==='asc'?'升序':'降序') ):('按家宽完成率降序');
+  document.getElementById('rankMeta').textContent='共 '+arr.length+' 家分公司, '+sortLabel;
   document.getElementById('rankFilterHint').textContent='';
+  var arrow=function(key){
+    if(rankSortKey&&rankSortKey.key===key)return '<span class="arrow">'+(rankSortKey.dir==='desc'?'▼':'▲')+'</span>';
+    return '<span class="arrow">↕</span>';
+  };
+  var colCls=function(key){return rankSortKey&&rankSortKey.key===key?' sorted':'';};
   var headRow='<div class="row head">'
     +'<div class="col c">序</div><div class="col cl">分公司</div>'
-    +'<div class="col cl">家宽累计</div>'
-    +'<div class="col">家宽完成率</div>'
-    +'<div class="col">FTTR完成率</div>'
-    +'<div class="col">智屏完成率</div>'
-    +'<div class="col">千兆占比</div></div>';
+    +'<div class="col cl" style="cursor:default">家宽累计</div>'
+    +'<div class="col" data-sort="jk_rate">家宽完成率'+arrow('jk_rate')+'</div>'
+    +'<div class="col" data-sort="fttr_rate">FTTR完成率'+arrow('fttr_rate')+'</div>'
+    +'<div class="col" data-sort="zp_rate">智屏完成率'+arrow('zp_rate')+'</div>'
+    +'<div class="col" data-sort="qz_ratio">千兆占比'+arrow('qz_ratio')+'</div>'
+    +'<div class="col'+colCls('jk_avg')+'" data-sort="jk_avg">家宽日均'+arrow('jk_avg')+'</div>'
+    +'<div class="col'+colCls('fttr_avg')+'" data-sort="fttr_avg">FTTR日均'+arrow('fttr_avg')+'</div>'
+    +'<div class="col'+colCls('zp_avg')+'" data-sort="zp_avg">智屏日均'+arrow('zp_avg')+'</div>'
+    +'<div class="col'+colCls('rh_avg')+'" data-sort="rh_avg">融合日均'+arrow('rh_avg')+'</div>'
+    +'<div class="col'+colCls('qz_avg')+'" data-sort="qz_avg">千兆日均'+arrow('qz_avg')+'</div></div>';
   var rows='';
-  if(curGroup==='zone'&&(curZone==='all'&&curBranch==='all')){
+  if(curGroup==='zone'&&(curZone==='all'&&curBranch==='all')&&!rankSortKey){
     var ZORDER=[['市区','#722ED1'],['近郊','#13C2C2'],['远郊','#FA8C16']];
     ZORDER.forEach(function(zcol){
       var zn=zcol[0], dotColor=zcol[1];
@@ -737,7 +791,25 @@ function renderRank(){
   }else{
     arr.forEach(function(b,i){rows+=buildBranchRow(b,i,arr.length-1)});
   }
-  document.getElementById('rankTable').innerHTML=headRow+rows;
+  var el=document.getElementById('rankTable');
+  el.innerHTML=headRow+rows;
+  // 绑定表头排序事件
+  el.querySelectorAll('.row.head .col[data-sort]').forEach(function(col){
+    col.onclick=function(){
+      var key=col.dataset.sort;
+      if(rankSortKey&&rankSortKey.key===key){
+        rankSortKey.dir=rankSortKey.dir==='desc'?'asc':'desc';
+      }else{
+        rankSortKey={key:key,dir:'desc'};
+      }
+      renderRank();
+    };
+  });
+}
+function rankSortLabel(key){
+  var m={jk_rate:'家宽完成率',fttr_rate:'FTTR完成率',zp_rate:'智屏完成率',qz_ratio:'千兆占比',
+    jk_avg:'家宽日均',fttr_avg:'FTTR日均',zp_avg:'智屏日均',rh_avg:'融合日均',qz_avg:'千兆日均'};
+  return m[key]||key;
 }
 
 // ===== Insights =====
