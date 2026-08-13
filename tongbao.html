@@ -778,7 +778,7 @@ function renderRank(){
     +'<div class="col'+colCls('rh_avg')+'" data-sort="rh_avg">融合日均'+arrow('rh_avg')+'</div>'
     +'<div class="col'+colCls('qz_avg')+'" data-sort="qz_avg">千兆日均'+arrow('qz_avg')+'</div></div>';
   var rows='';
-  if(curGroup==='zone'&&(curZone==='all'&&curBranch==='all')&&!rankSortKey){
+  if(curGroup==='zone'&&(curZone==='all'&&curBranch==='all')){
     var ZORDER=[['市区','#722ED1'],['近郊','#13C2C2'],['远郊','#FA8C16']];
     ZORDER.forEach(function(zcol){
       var zn=zcol[0], dotColor=zcol[1];
