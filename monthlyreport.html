@@ -489,7 +489,7 @@ function updateBranchTables(){updateBranchTable('branchHomeBody',DATA.branchHome
 
 function updateAll(animate){updateCumulative(animate);updateKPI();updateAllCharts();updateBranchTables();}
 
-function selectMonth(idx){if(idx===currentMonth)return;currentMonth=idx;document.querySelectorAll('.month-btn').forEach(function(btn,i){btn.classList.toggle('active',i===idx);});updateAll(true);}
+function selectMonth(idx){if(idx===currentMonth)return;currentMonth=idx;document.querySelectorAll('.month-btn:not(.d-month-btn)').forEach(function(btn,i){btn.classList.toggle('active',i===idx);});updateAll(true);}
 
 function updateClock(){var n=new Date(),p=function(v){return String(v).padStart(2,'0');};var wk=['日','一','二','三','四','五','六'][n.getDay()];document.getElementById('clock').textContent=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+' 周'+wk;}
 
@@ -671,8 +671,7 @@ function selectDrillMonth(idx){
   if(idx===currentMonth)return;
   currentMonth=idx;
   document.querySelectorAll('.d-month-btn').forEach(function(btn,i){btn.classList.toggle('active',i===idx);});
-  // 同步主页面月份按钮
-  document.querySelectorAll('.month-btn').forEach(function(btn,i){btn.classList.toggle('active',i===idx);});
+  document.querySelectorAll('.month-btn:not(.d-month-btn)').forEach(function(btn,i){btn.classList.toggle('active',i===idx);});
   updateDrillAll(true);
 }
 
@@ -693,7 +692,7 @@ function exportDrillScreen(){
 function updateDrillClock(){var n=new Date(),p=function(v){return String(v).padStart(2,'0');};var wk=['日','一','二','三','四','五','六'][n.getDay()];var el=document.getElementById('drillClock');if(el)el.textContent=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+' 周'+wk;}
 
 window.addEventListener('load',function(){
-  document.querySelectorAll('.month-btn').forEach(function(btn){btn.addEventListener('click',function(){selectMonth(parseInt(btn.dataset.month));});});
+  document.querySelectorAll('.month-btn:not(.d-month-btn)').forEach(function(btn){btn.addEventListener('click',function(){selectMonth(parseInt(btn.dataset.month));});});
   document.getElementById('exportBtn').addEventListener('click',exportScreen);
   document.getElementById('themeBtn').addEventListener('click',toggleTheme);
   // 下钻事件
