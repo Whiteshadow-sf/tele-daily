@@ -376,7 +376,7 @@ function getAxisLine(){return{lineStyle:{color:isLight?'#d0d5dd':'#1a3a6c'}};}
 function getAxisLabel(){return{color:isLight?'#5a6778':'#8a9bb0',fontSize:11,fontFamily:'Microsoft YaHei,sans-serif'};}
 function getSplitLine(){return{lineStyle:{color:isLight?'rgba(0,0,0,0.06)':'rgba(26,58,108,0.15)',type:'dashed'}};}
 function getLegendBase(){return{textStyle:{color:isLight?'#1a2332':'#e0e6ed',fontSize:11},itemWidth:12,itemHeight:8,top:6,right:15};}
-function getTooltipBase(){return{backgroundColor:isLight?'rgba(255,255,255,0.96)':'rgba(10,22,40,0.95)',borderColor:isLight?'#d0d5dd':'#1a3a6c',borderWidth:1,textStyle:{color:isLight?'#1a2332':'#e0e6ed',fontSize:12},axisPointer:{type:'shadow',shadowStyle:{color:isLight?'rgba(0,0,0,0.04)':'rgba(26,58,108,0.15)'}}};}
+function getTooltipBase(){return{backgroundColor:isLight?'rgba(255,255,255,0.96)':'rgba(10,22,40,0.95)',borderColor:isLight?'#d0d5dd':'#1a3a6c',borderWidth:1,textStyle:{color:isLight?'#1a2332':'#e0e6ed',fontSize:12},axisPointer:{type:'shadow',shadowStyle:{color:isLight?'rgba(0,0,0,0.04)':'rgba(26,58,108,0.15)'}},valueFormatter:function(v){return typeof v==='number'?v.toFixed(2):v;}};}
 function getLabelColor(){return isLight?'#1a2332':'#e0e6ed';}
 
 // ===== CHART OPTIONS =====
