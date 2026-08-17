@@ -144,6 +144,85 @@ body.light .wz-group-row td{background:rgba(196,26,26,0.04)!important;color:#d48
 .drill-subtitle{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:1px;transition:color .4s;}
 .drill-right{display:flex;align-items:center;gap:10px;}
 
+/* ===== MOBILE RESPONSIVE ===== */
+@media screen and (max-width:768px){
+  html,body{overflow-x:hidden;}
+  #screen,#drillPage{width:100%!important;transform:none!important;}
+  /* 顶部 */
+  .header{height:auto;flex-wrap:wrap;padding:8px 12px;gap:6px;}
+  .header-left{flex:1;min-width:0;}
+  .header-title{font-size:16px;letter-spacing:0;}
+  .header-subtitle{font-size:9px;}
+  .header-right{gap:6px;flex-wrap:wrap;}
+  .clock-box{font-size:10px;padding:3px 8px;display:none;}
+  .export-btn,.theme-btn{font-size:11px;padding:4px 10px;}
+  .drill-header{height:auto;flex-wrap:wrap;padding:8px 12px;gap:6px;}
+  .drill-title{font-size:16px;letter-spacing:0;}
+  .drill-subtitle{font-size:9px;}
+  .drill-right{gap:6px;flex-wrap:wrap;}
+  #drillClock{display:none;}
+  /* 累计指标横向滚动 */
+  .cumulative-bar{padding:4px 8px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
+  .cum-card{min-width:130px;flex-shrink:0;height:36px;padding:0 10px;}
+  .cum-label{font-size:10px;}
+  .cum-value{font-size:13px;}
+  .cum-dot{width:6px;height:6px;}
+  /* 月份选择 */
+  .month-selector{padding:4px 8px;flex-wrap:wrap;gap:4px;}
+  .selector-label{font-size:11px;width:100%;margin-bottom:2px;}
+  .month-btn{padding:3px 10px;font-size:11px;}
+  .back-btn{padding:4px 12px;font-size:12px;}
+  /* 分割线 */
+  .section-divider{margin:2px 8px;}
+  /* 图表行→纵向排列 */
+  .row{flex-direction:column!important;height:auto!important;padding:0 8px;margin-bottom:6px;}
+  .row>.col{width:100%!important;}
+  .row>.panel{width:100%!important;height:auto!important;flex-shrink:0;}
+  .row>.col>.panel{height:auto!important;min-height:180px;}
+  .row>.col>.panel:first-child{min-height:220px;}
+  /* KPI */
+  .kpi-grid{height:auto!important;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:6px;padding:4px 0;}
+  .kpi-card{padding:6px 10px;}
+  .kpi-label{font-size:10px;}
+  .kpi-value{font-size:18px;}
+  .kpi-change{font-size:10px;}
+  /* 面板 */
+  .panel{min-height:200px;}
+  .panel-header{font-size:12px;padding:6px 10px;}
+  .chart{min-height:180px;height:200px;}
+  /* 分公司表格→纵向排列 */
+  .branch-section{flex-direction:column!important;padding:0 8px 12px;gap:8px;}
+  .branch-panel{min-height:auto;}
+  .branch-panel-header{font-size:12px;padding:6px 10px;}
+  .branch-total-tag{font-size:10px;}
+  .branch-total-tag b{font-size:12px;}
+  .branch-table-wrap{max-height:300px;}
+  .branch-table{font-size:11px;}
+  .branch-table thead th{font-size:10px;padding:4px 2px;}
+  .branch-table tbody td{padding:3px 2px;font-size:11px;}
+  .td-name{font-size:11px!important;padding-left:4px!important;}
+  .bar-cell{height:14px;}
+  .bar-bg{height:10px;}
+  .bar-val{font-size:11px;}
+  .wz-tag{font-size:9px;padding:0 3px;}
+  .wz-group-row td{font-size:11px!important;padding:3px 2px!important;}
+}
+@media screen and (max-width:480px){
+  .header-title{font-size:14px;}
+  .header-subtitle{display:none;}
+  .cum-card{min-width:110px;}
+  .cum-label{font-size:9px;}
+  .cum-value{font-size:12px;}
+  .month-btn{padding:2px 8px;font-size:10px;}
+  .kpi-value{font-size:16px;}
+  .panel-header{font-size:11px;}
+  .branch-table{font-size:10px;}
+  .branch-table thead th{font-size:9px;}
+  .branch-table tbody td{font-size:10px;padding:2px 1px;}
+  .td-name{font-size:10px!important;}
+  .bar-val{font-size:10px;}
+}
+
 </style>
 </head>
 <body>
@@ -493,7 +572,7 @@ function selectMonth(idx){if(idx===currentMonth)return;currentMonth=idx;document
 
 function updateClock(){var n=new Date(),p=function(v){return String(v).padStart(2,'0');};var wk=['日','一','二','三','四','五','六'][n.getDay()];document.getElementById('clock').textContent=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+' 周'+wk;}
 
-function scaleScreen(){var sw=window.innerWidth;var s=document.getElementById('screen');s.style.transform=sw<1920?'scale('+(sw/1920)+')':'none';s.style.transformOrigin='top left';}
+function scaleScreen(){var sw=window.innerWidth;if(sw<768){var s=document.getElementById('screen');s.style.width='100%';s.style.transform='none';}else{var s=document.getElementById('screen');s.style.width='1920px';s.style.transform=sw<1920?'scale('+(sw/1920)+')':'none';s.style.transformOrigin='top left';}}
 
 function exportScreen(){var btn=document.getElementById('exportBtn');btn.textContent='正在导出...';btn.disabled=true;var screen=document.getElementById('screen');var oT=screen.style.transform;screen.style.transform='none';html2canvas(screen,{backgroundColor:isLight?'#f0f2f5':'#0a1628',scale:1,useCORS:true,logging:false,width:1920,windowWidth:1920}).then(function(canvas){screen.style.transform=oT;scaleScreen();var link=document.createElement('a');link.download='北京电信宽带发展大屏_'+DATA.months[currentMonth]+'.png';link.href=canvas.toDataURL('image/png');link.click();btn.textContent='导出截图';btn.disabled=false;}).catch(function(){screen.style.transform=oT;scaleScreen();btn.textContent='导出截图';btn.disabled=false;});}
 
@@ -568,7 +647,7 @@ function hideDrill(){
   setTimeout(function(){Object.values(charts).forEach(function(c){c.resize();});},100);
 }
 
-function scaleDrill(){var sw=window.innerWidth;var dp=document.getElementById('drillPage');dp.style.width='1920px';dp.style.transform=sw<1920?'scale('+(sw/1920)+')':'none';dp.style.transformOrigin='top left';}
+function scaleDrill(){var sw=window.innerWidth;var dp=document.getElementById('drillPage');if(sw<768){dp.style.width='100%';dp.style.transform='none';}else{dp.style.width='1920px';dp.style.transform=sw<1920?'scale('+(sw/1920)+')':'none';dp.style.transformOrigin='top left';}}
 
 function updateDrillCumulative(animate){
   var m=currentMonth;
@@ -711,7 +790,7 @@ window.addEventListener('load',function(){
   charts.channelPie=echarts.init(document.getElementById('channelPieChart'));
   updateAll(true);
   updateClock();setInterval(function(){updateClock();updateDrillClock();},1000);
-  scaleScreen();window.addEventListener('resize',function(){scaleScreen();if(drillActive)scaleDrill();});
+  scaleScreen();window.addEventListener('resize',function(){scaleScreen();if(drillActive){scaleDrill();}setTimeout(function(){Object.values(charts).forEach(function(c){c.resize();});Object.values(dCharts).forEach(function(c){if(c)c.resize();});},100);});
   setTimeout(function(){Object.values(charts).forEach(function(c){c.resize();});},200);
 });
 </script>
