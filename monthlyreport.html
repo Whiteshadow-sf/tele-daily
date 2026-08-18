@@ -289,7 +289,7 @@ body.light .wz-group-row td{background:rgba(196,26,26,0.04)!important;color:#d48
   <div class="section-divider"></div>
 
   <!-- Row 5: 各区分公司分产品类/分渠道（当月日均） -->
-  <div class="row" style="height:680px;">
+  <div class="row" style="height:720px;">
     <div class="panel" style="width:55%;"><div class="panel-header">各区分公司分产品类（当月日均）</div><div id="branchCategoryBarChart" class="chart"></div></div>
     <div class="panel" style="width:45%;"><div class="panel-header">各区分公司分渠道（当月日均）</div><div id="branchChannelBarChart" class="chart"></div></div>
   </div>
@@ -4543,7 +4543,7 @@ function branchCategoryBarOption(){
       var v=DATA.branchCategories[bn][cn];return v&&v[m]>0;
     });
   });
-  return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{textStyle:{color:getLabelColor(),fontSize:9},itemWidth:8,itemHeight:6,top:4,left:'center',type:'scroll'},grid:{left:48,right:18,top:36,bottom:36},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:9},splitLine:getSplitLine()},yAxis:{type:'category',data:branchList,axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:8},axisTick:{show:false}},dataZoom:[{type:'slider',yAxisIndex:0,startValue:0,endValue:14,minValueSpan:6,maxValueSpan:15,left:2,right:90,top:'middle',height:14,handleSize:12,borderColor:getLabelColor(),fillerColor:'rgba(196,26,26,0.15)',dataBackground:{lineStyle:{color:getLabelColor()},areaStyle:{color:getLabelColor()}},selectedDataBackground:{lineStyle:{color:'#C41A1A'},areaStyle:{color:'#C41A1A'}}}],series:catNames.map(function(cn){
+  return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{textStyle:{color:getLabelColor(),fontSize:9},itemWidth:8,itemHeight:6,top:4,left:'center',type:'scroll'},grid:{left:48,right:18,top:28,bottom:6},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:9},splitLine:getSplitLine()},yAxis:{type:'category',data:branchList,axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:8,interval:0},axisTick:{show:false}},series:catNames.map(function(cn){
     return{name:cn,type:'bar',stack:'bc',barWidth:'55%',data:branchList.map(function(bn){
       var v=DATA.branchCategories[bn]&&DATA.branchCategories[bn][cn];
       return v?v[m]:0;
@@ -4564,7 +4564,7 @@ function branchChannelBarOption(){
   branchList.reverse();
   var chNames=Object.keys(DATA.channels[0]);
   var chColors=['#C41A1A','#e74c3c','#f5a623','#5dade2','#3498db','#2ecc71','#9b59b6','#1abc9c'];
-  return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{textStyle:{color:getLabelColor(),fontSize:9},itemWidth:8,itemHeight:6,top:4,left:'center',type:'scroll'},grid:{left:48,right:18,top:36,bottom:36},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:9},splitLine:getSplitLine()},yAxis:{type:'category',data:branchList,axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:8},axisTick:{show:false}},dataZoom:[{type:'slider',yAxisIndex:0,startValue:0,endValue:14,minValueSpan:6,maxValueSpan:15,left:2,right:90,top:'middle',height:14,handleSize:12,borderColor:getLabelColor(),fillerColor:'rgba(196,26,26,0.15)',dataBackground:{lineStyle:{color:getLabelColor()},areaStyle:{color:getLabelColor()}},selectedDataBackground:{lineStyle:{color:'#C41A1A'},areaStyle:{color:'#C41A1A'}}}],series:chNames.map(function(name,ci){
+  return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{textStyle:{color:getLabelColor(),fontSize:9},itemWidth:8,itemHeight:6,top:4,left:'center',type:'scroll'},grid:{left:48,right:18,top:28,bottom:6},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:9},splitLine:getSplitLine()},yAxis:{type:'category',data:branchList,axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:8,interval:0},axisTick:{show:false}},series:chNames.map(function(name,ci){
     return{name:name,type:'bar',stack:'bch',barWidth:'55%',data:branchList.map(function(bn){
       var bc=DATA.branchChannels[bn];
       if(bc&&bc[m]&&bc[m][name])return bc[m][name];
