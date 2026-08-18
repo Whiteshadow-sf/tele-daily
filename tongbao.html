@@ -1154,6 +1154,7 @@ function renderAll(){
 document.addEventListener('DOMContentLoaded',function(){
   REPORT = MULTI.months[curMonth];
   updateMetaTargets();
+  document.getElementById('monthBadge').textContent = curMonth + '月';
   renderMonthSwitch();
   curIdx=REPORT.days.length-1;
   if(curIdx<0)curIdx=0;
