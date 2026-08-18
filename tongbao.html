@@ -181,6 +181,44 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .mask{position:fixed;inset:0;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;color:var(--ink3)}
 .mask .spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--tel);border-radius:50%;animation:rot 1s linear infinite;margin-bottom:10px}
 @keyframes rot{to{transform:rotate(360deg)}}
+
+/* ===== 分公司下钻视图 ===== */
+.branch-drill{display:none}
+body.drilling .branch-drill{display:block}
+body.drilling .main-view{display:none}
+.drill-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.drill-back{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink2);box-shadow:0 1px 4px rgba(0,0,0,.04);transition:all .2s}
+.drill-back:hover{color:var(--tel);border-color:var(--tel)}
+.drill-back .arr{font-size:16px;line-height:1}
+.drill-title-name{font-size:20px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px}
+.drill-title-name .zchip{font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
+.drill-title-name .zchip.city{color:#722ED1;background:#f3ecff}
+.drill-title-name .zchip.sub{color:#0c7575;background:#e0faf7}
+.drill-title-name .zchip.far{color:#a85b00;background:#fff1e0}
+.drill-title-meta{margin-left:auto;font-size:12px;color:var(--ink3);font-weight:400}
+.drill-zone-rank{display:flex;flex-direction:column;gap:8px}
+.drill-zone-row{background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:0 1px 4px rgba(0,0,0,.04);display:flex;align-items:center;gap:10px;border-left:3px solid var(--line);cursor:pointer;transition:all .2s}
+.drill-zone-row:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.drill-zone-row.self{border-left-color:var(--tel);background:linear-gradient(90deg,#fff5f6,#fff)}
+.drill-zone-row .zr-rank{width:28px;height:28px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--ink2);flex-shrink:0;font-family:"DIN Alternate","Arial",sans-serif}
+.drill-zone-row.self .zr-rank{background:var(--tel);color:#fff}
+.drill-zone-row .zr-name{font-size:15px;font-weight:700;flex:0 0 90px}
+.drill-zone-row .zr-rate{flex:1;display:flex;align-items:center;gap:8px}
+.drill-zone-row .zr-bar{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.drill-zone-row .zr-bar .pf{height:100%;border-radius:4px;background:var(--red)}
+.drill-zone-row .zr-bar .pf.down{background:var(--green)}
+.drill-zone-row .zr-bar .pf.warn{background:var(--warn)}
+.drill-zone-row .zr-pill{flex-shrink:0;min-width:78px;text-align:right;font-family:"DIN Alternate","Arial",sans-serif}
+.drill-zone-row .zr-pill .val{font-size:16px;font-weight:800}
+.drill-zone-row .zr-pill .sub{font-size:10px;color:var(--ink3)}
+.drill-zone-row.self .zr-pill .val{color:var(--tel)}
+.drill-cards .cards{grid-template-columns:repeat(4,1fr)}
+@media(max-width:720px){
+  .drill-cards .cards{grid-template-columns:repeat(2,1fr)}
+  .drill-title-name{font-size:17px}
+  .drill-zone-row{flex-wrap:wrap}
+  .drill-zone-row .zr-name{flex-basis:100%}
+}
 </style>
 </head>
 <body>
@@ -205,7 +243,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div class="days" id="daysList"></div>
 </div>
 
-<div class="container">
+<div class="container main-view">
 
   <div class="section">
     <div class="section-title">总体概览<span class="meta" id="dateMeta"></span></div>
@@ -244,6 +282,39 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 </div>
 
+<!-- ===== 分公司下钻视图 ===== -->
+<div class="container branch-drill" id="drillView">
+  <div class="drill-header">
+    <button class="drill-back" id="drillBack"><span class="arr">&#8592;</span> 返回总览</button>
+    <div class="drill-title-name" id="drillTitle"></div>
+    <div class="drill-title-meta" id="drillMeta"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">总体概览<span class="meta">4指标 完成率/当日/累计/日均</span></div>
+    <div class="drill-cards"><div class="cards" id="drillCards"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">所在战区排名<span class="meta" id="drillZoneMeta"></span></div>
+    <div class="drill-zone-rank" id="drillZoneRank"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">日趋势 · 4指标<span class="meta">当日新增曲线</span></div>
+    <div class="chart-box">
+      <div class="chart-tabs" id="drillChartTabs">
+        <button class="chart-tab active" data-key="jiakuan">家宽</button>
+        <button class="chart-tab" data-key="fttr">FTTR</button>
+        <button class="chart-tab" data-key="zhiping">智屏</button>
+        <button class="chart-tab" data-key="qianzhao">千兆</button>
+      </div>
+      <div class="chart-area"><canvas id="drillTrendChart"></canvas></div>
+      <div class="trend-tip" id="drillTrendTip"></div>
+    </div>
+  </div>
+</div>
+
 <div class="footer">
   数据来源：智光数据 / 宽带发展数据 底表<span class="pipe">|</span>口径：智屏/FTTR按归档时间、家宽/千兆按入网时间<span class="pipe">|</span>加载率=FTTR新增/千兆新增
 </div>
@@ -270,6 +341,7 @@ function switchMonth(m){
   if(curIdx < 0) curIdx = 0;
   renderDays();
   renderAll();
+  if(drillBranch)renderDrill();
   updateNav();
 }
 
@@ -347,6 +419,7 @@ function selectDay(i){
   curIdx=Math.max(0,Math.min(REPORT.days.length-1,i));
   renderDays();
   renderAll();
+  if(drillBranch)renderDrill();
   var active=document.querySelector('.dchip.active');
   if(active)active.scrollIntoView({inline:'center',inlineBehavior:'smooth',block:'nearest'});
   updateNav();
@@ -658,7 +731,7 @@ function buildBranchRow(b,i,isLast){
              '<div class="ll" style="margin-top:2px">日均 '+fmt(b.qianzhao.avg,1)+momMini(b.qianzhao.avg,jB.qianzhao)+'</div></div>';
   return '<div class="row">'
     +'<div class="rk '+rkcls+'">'+(i+1)+'</div>'
-    +'<div class="bn"><div>'+b.branch+'</div><div class="zn '+zoneCls[b.zone]+'">'+b.zone+'</div></div>'
+    +'<div class="bn"><div class="branch-link" data-branch="'+b.branch+'" style="cursor:pointer">'+b.branch+'<span style="font-size:10px;color:var(--tel);margin-left:2px">&#10148;</span></div><div class="zn '+zoneCls[b.zone]+'">'+b.zone+'</div></div>'
     +'<div class="metric" style="text-align:left;padding-left:4px"><div class="val '+jkCls+'" style="text-align:left">'+b.jiakuan.cum+'户</div><div class="ll">家宽月累计</div></div>'
     +metricCell(b.jiakuan.rate,b.jiakuan.avg,jB.jiakuan)
     +cunliangCell(b.fttr.rate,b.fttr.avg,jB.fttr,b.fttr.cunliang_avg)
@@ -806,6 +879,13 @@ function renderRank(){
       renderRank();
     };
   });
+  // 绑定分公司下钻点击事件
+  el.querySelectorAll('.branch-link').forEach(function(link){
+    link.onclick=function(ev){
+      ev.stopPropagation();
+      openDrill(link.dataset.branch);
+    };
+  });
 }
 function rankSortLabel(key){
   var m={jk_rate:'家宽完成率',fttr_rate:'FTTR完成率',zp_rate:'智屏完成率',qz_ratio:'千兆占比',
@@ -847,6 +927,221 @@ function renderInsights(){
   document.getElementById('insights').innerHTML=html;
 }
 
+// ===== 分公司下钻 =====
+var drillBranch = null;   // 当前下钻的分公司名
+var drillChart = null;    // 下钻趋势图
+var drillTab = 'jiakuan'; // 下钻趋势图当前指标
+
+var BZONE_MAP={'朝阳':'市区','海淀':'市区','东城':'市区','丰台':'市区','西城':'市区','通州':'市区','昌平':'近郊','顺义':'近郊','大兴':'近郊','房山':'近郊','门头沟':'近郊','怀柔':'远郊','平谷':'远郊','延庆':'远郊','密云':'远郊'};
+var ZONE_BRANCHES={'市区':['朝阳','海淀','东城','丰台','西城','通州'],'近郊':['昌平','顺义','大兴','房山','门头沟'],'远郊':['怀柔','平谷','延庆','密云']};
+
+function openDrill(branch){
+  drillBranch=branch;
+  document.body.classList.add('drilling');
+  renderDrill();
+  window.scrollTo(0,0);
+}
+function closeDrill(){
+  drillBranch=null;
+  document.body.classList.remove('drilling');
+  renderAll();
+}
+
+function getBranchData(dayObj,branch){
+  for(var i=0;i<dayObj.branch.length;i++){
+    if(dayObj.branch[i].branch===branch)return dayObj.branch[i];
+  }
+  return null;
+}
+
+function renderDrill(){
+  if(!drillBranch)return;
+  var d=REPORT.days[curIdx];
+  var b=getBranchData(d,drillBranch);
+  if(!b){closeDrill();return;}
+  var zn=BZONE_MAP[drillBranch]||b.zone||'市区';
+  var zoneCls={'市区':'city','近郊':'sub','远郊':'far'};
+
+  // 标题
+  document.getElementById('drillTitle').innerHTML=drillBranch+'<span class="zchip '+zoneCls[zn]+'">'+zn+'</span>';
+  document.getElementById('drillMeta').textContent='截至 '+curMonth+'/'+d.day+' · 已过'+d.days_elapsed+'天';
+
+  // 总体概览卡片（复用主视图卡片样式）
+  renderDrillCards(b);
+
+  // 所在战区排名
+  renderDrillZoneRank(d,b,zn);
+
+  // 趋势图
+  renderDrillTrend();
+}
+
+function renderDrillCards(b){
+  var html='';
+  function miniCard(key,label){
+    var m=metricMeta[key];
+    var O=b[key];
+    var r=O.rate;
+    var valHtml='<div class="rate '+(key==='qianzhao'?(O.qz_ratio>=32?'up':(O.qz_ratio>=25?'warn':'down')):rateClass(r))+'">'+(key==='qianzhao'?fmt(O.qz_ratio,1)+'<span class="pct">%</span>':fmt(r,1)+'<span class="pct">%</span>')+'</div>';
+    var grid='<div class="grid">'+
+      '<div class="stat"><div class="k">当日新增</div><div class="v">'+fmtInt(O.daily)+'户</div></div>'+
+      '<div class="stat"><div class="k">当月累计</div><div class="v">'+fmtInt(O.cum)+'户</div></div>'+
+      '<div class="stat"><div class="k">当月日均</div><div class="v">'+fmt(O.avg,1)+'户/日</div></div>'+
+      (key==='qianzhao'
+        ?'<div class="stat"><div class="k">千兆占家宽</div><div class="v">'+fmt(b.jiakuan.avg?(O.avg/b.jiakuan.avg*100):0,1)+'%</div></div>'
+        :'<div class="stat"><div class="k">月度牵引</div><div class="v">'+fmt(O.target,1)+'户/日</div></div>')+
+      '</div>';
+    html+='<div class="card '+key+'"><div class="top"><div class="name">'+label+'</div>'+valHtml+'</div>'+grid+'</div>';
+  }
+  miniCard('jiakuan','家宽');
+  miniCard('fttr','FTTR');
+  miniCard('zhiping','智屏');
+  miniCard('qianzhao','千兆');
+  document.getElementById('drillCards').innerHTML=html;
+}
+
+function renderDrillZoneRank(d,b,zn){
+  var zb=d.branch.filter(function(x){return BZONE_MAP[x.branch]===zn});
+  zb.sort(function(a,b){return(b.jiakuan.rate||0)-(a.jiakuan.rate||0)});
+  var idx=-1;
+  zb.forEach(function(x,i){if(x.branch===b.branch)idx=i});
+  var html='';
+  zb.forEach(function(x,i){
+    var self=x.branch===b.branch;
+    var r=x.jiakuan.rate||0;
+    var barCls=r>=100?'up':(r>=80?'warn':'down');
+    var w=Math.min(150,r);
+    html+='<div class="drill-zone-row'+(self?' self':'')+'" data-branch="'+x.branch+'">'+
+      '<div class="zr-rank">'+(i+1)+'</div>'+
+      '<div class="zr-name">'+x.branch+(self?' <span style="color:var(--tel);font-size:11px">(本分公司)</span>':'')+'</div>'+
+      '<div class="zr-rate"><div class="zr-bar"><div class="pf '+barCls+'" style="width:'+w+'%"></div></div>'+
+      '<div class="zr-pill"><div class="val">'+fmt(r,1)+'%</div><div class="sub">日均 '+fmt(x.jiakuan.avg,1)+'</div></div></div>'+
+      '</div>';
+  });
+  var meta='按家宽完成率排名 · 本战区共 '+zb.length+' 家 · 当前排名第 '+(idx>=0?(idx+1):'-')+' 位';
+  document.getElementById('drillZoneMeta').textContent=meta;
+  document.getElementById('drillZoneRank').innerHTML=html;
+  // 点击战区行也可跳转
+  document.getElementById('drillZoneRank').querySelectorAll('.drill-zone-row').forEach(function(row){
+    row.onclick=function(){
+      if(row.dataset.branch!==drillBranch)openDrill(row.dataset.branch);
+    };
+  });
+}
+
+function renderDrillTrend(){
+  if(!drillBranch)return;
+  var d=REPORT.days;
+  var m=metricMeta[drillTab];
+  var labels=d.map(function(x){return curMonth+'/'+x.day});
+  var dailyArr=d.map(function(x){
+    var b=getBranchData(x,drillBranch);
+    if(!b)return 0;
+    if(drillTab==='qianzhao')return b.qianzhao.daily||0;
+    return b[drillTab].daily||0;
+  });
+  // 环比6月参考线（分公司维度）
+  var JA=REPORT.meta.june_avg||{};
+  var jB=(JA.branch||{})[drillBranch]||{};
+  var juneVal=(drillTab==='qianzhao')?(jB.qianzhao_avg||0):(jB[drillTab+'_avg']||0);
+  // 分公司牵引线：使用该分公司目标（千兆无目标则不画）
+  var curB=getBranchData(d[d.length-1],drillBranch);
+  var bTarget=(drillTab==='qianzhao')?null:(curB?curB[drillTab].target:0);
+  var lineVal=bTarget;
+
+  var tip='<strong style="color:'+metricMeta[drillTab].color+'">━━ '+drillBranch+' '+curMonth+'月当日新增</strong>'+
+    (juneVal>0?' vs <strong style="color:#86909c">- - '+prevMonth+'日均 '+fmt(juneVal,1)+'</strong>':'')+
+    (lineVal?'，<span style="color:#E60012">红色虚线为牵引值 '+fmt(lineVal,1)+'户/日</span>':'')+
+    '，橙色点为周末';
+  document.getElementById('drillTrendTip').innerHTML=tip;
+
+  var ctx=document.getElementById('drillTrendChart').getContext('2d');
+  if(drillChart)drillChart.destroy();
+  drillChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:labels,datasets:[
+      {
+        label:curMonth+'月 '+metricMeta[drillTab].name+'当日新增',
+        data:dailyArr,
+        borderColor:metricMeta[drillTab].color,
+        backgroundColor:metricMeta[drillTab].color+'15',
+        borderWidth:2.5,
+        tension:0.3,
+        pointRadius:function(ctx){
+          if(ctx.dataIndex===curIdx)return 7;
+          return isWeekend(d[ctx.dataIndex].date)?3:2;
+        },
+        pointBackgroundColor:function(ctx){
+          if(ctx.dataIndex===curIdx)return '#E60012';
+          return isWeekend(d[ctx.dataIndex].date)?'#FA8C16':metricMeta[drillTab].color;
+        },
+        pointBorderColor:'#fff',
+        pointBorderWidth:1,
+        fill:true,
+        order:1
+      },
+      {
+        label:prevMonth+'日均参考线',
+        data:labels.map(function(){return juneVal||0}),
+        borderColor:'#86909c',
+        backgroundColor:'transparent',
+        borderWidth:1.6,
+        borderDash:[6,4],
+        pointRadius:0,
+        fill:false,
+        order:2
+      },
+      {
+        label:'牵引值(日均目标)',
+        data:labels.map(function(){return lineVal||null}),
+        borderColor:'#E60012',
+        borderDash:[4,4],
+        borderWidth:2,
+        pointRadius:0,
+        fill:false,
+        order:3,
+        spanGaps:false
+      }
+    ]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{font:{size:11},boxWidth:14,boxHeight:8,padding:8}},
+        tooltip:{
+          callbacks:{
+            title:function(items){
+              if(!items||!items.length)return '';
+              var idx=items[0].dataIndex;
+              var dayObj=d[idx];
+              return curMonth+'/'+dayObj.day+'('+weekdayLabel(dayObj.date)+')'+(isWeekend(dayObj.date)?' ⏶ 周末':'');
+            },
+            label:function(ctx){
+              var dIdx=ctx.dataIndex;
+              var dayObj=d[dIdx];
+              if(ctx.datasetIndex===0){
+                if(drillTab==='qianzhao')return drillBranch+'千兆新增 '+fmtInt(ctx.parsed.y)+'户 | 日均 '+fmt(dayObj.qianzhao.avg,1);
+                return drillBranch+' '+metricMeta[drillTab].name+'新增 '+fmtInt(ctx.parsed.y)+'户 | 日均 '+fmt(dayObj[drillTab].avg,1)+'户 | 完成率 '+fmt(dayObj[drillTab].rate,1)+'%';
+              }
+              if(ctx.datasetIndex===1)return prevMonth+'日均 '+fmt(ctx.parsed.y,1)+'户/日';
+              return '牵引值 '+fmt(ctx.parsed.y,1)+'户/日';
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:0,autoSkip:false,color:function(ctx){
+          var idx=ctx.index;
+          if(idx>=0&&idx<d.length&&isWeekend(d[idx].date))return '#9c5b00';
+          return '#4e5969';
+        }}},
+        y:{beginAtZero:true,grid:{color:'#f0f1f3'}}
+      }
+    }
+  });
+}
+
 function renderAll(){
   renderCards();
   renderZones();
@@ -874,9 +1169,21 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   document.getElementById('prevDay').onclick=function(){selectDay(curIdx-1)};
   document.getElementById('nextDay').onclick=function(){selectDay(curIdx+1)};
+  // 下钻：返回按钮
+  document.getElementById('drillBack').onclick=function(){closeDrill()};
+  // 下钻：趋势图指标切换
+  document.querySelectorAll('#drillChartTabs .chart-tab').forEach(function(t){
+    t.onclick=function(){
+      document.querySelectorAll('#drillChartTabs .chart-tab').forEach(function(x){x.classList.remove('active')});
+      t.classList.add('active');
+      drillTab=t.dataset.key;
+      renderDrillTrend();
+    };
+  });
   document.addEventListener('keydown',function(e){
     if(e.key==='ArrowLeft')selectDay(curIdx-1);
     else if(e.key==='ArrowRight')selectDay(curIdx+1);
+    else if(e.key==='Escape'&&drillBranch)closeDrill();
   });
   setTimeout(function(){var m=document.getElementById('mask');if(m)m.style.display='none'},300);
 });
