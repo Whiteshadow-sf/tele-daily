@@ -287,7 +287,14 @@ body.light .wz-group-row td{background:rgba(196,26,26,0.04)!important;color:#d48
   </div>
   <div class="section-divider"></div>
 
-  <!-- Row 5: 分公司明细 -->
+  <!-- Row 5: 各区分公司分产品类/分渠道（当月日均） -->
+  <div class="row" style="height:220px;">
+    <div class="panel" style="width:55%;"><div class="panel-header">各区分公司分产品类（当月日均）</div><div id="branchCategoryBarChart" class="chart"></div></div>
+    <div class="panel" style="width:45%;"><div class="panel-header">各区分公司分渠道（当月日均）</div><div id="branchChannelBarChart" class="chart"></div></div>
+  </div>
+  <div class="section-divider"></div>
+
+  <!-- Row 6: 分公司明细 -->
   <div class="branch-section">
     <div class="branch-panel">
       <div class="branch-panel-header">家宽各分公司发展情况<span class="branch-total-tag">当月合计 <b id="totalHome">0</b></span></div>
@@ -4515,6 +4522,56 @@ function channelBarOption(){var m=currentMonth,ms=DATA.months.slice(0,m+1);var c
 
 function channelPieOption(){var m=currentMonth,ch=DATA.channels[m],sorted=sortObjByVal(ch,false);var colors=['#C41A1A','#e74c3c','#f5a623','#5dade2','#3498db','#2ecc71','#9b59b6','#1abc9c'];return{tooltip:{...getTooltipBase(),trigger:'item'},legend:{textStyle:{color:getLabelColor(),fontSize:10},itemWidth:10,itemHeight:8,bottom:5,left:'center',top:'auto',type:'scroll'},series:[{type:'pie',radius:['30%','58%'],center:['50%','45%'],data:sorted.map(function(e,i){return{value:e[1],name:e[0],itemStyle:{color:CHANNEL_COLORS[e[0]]||colors[i%colors.length]}};}),label:{color:getLabelColor(),fontSize:10,formatter:function(p){return p.name+' '+p.percent+'%';}},labelLine:{lineStyle:{color:isLight?'#d0d5dd':'#3a5070'}},emphasis:{itemStyle:{shadowBlur:15,shadowColor:'rgba(196,26,26,0.3)'}},animationDuration:800}]};}
 
+// ===== BRANCH-LEVEL BAR CHARTS (当月各区分公司) =====
+function branchCategoryBarOption(){
+  var m=currentMonth;
+  // 按战区分组的分公司列表（市区→近郊→远郊）
+  var wzGroups={'市区':[],'近郊':[],'远郊':[]};
+  Object.keys(DATA.wzMap).forEach(function(name){
+    wzGroups[DATA.wzMap[name]].push(name);
+  });
+  var branchList=[];
+  Object.keys(wzGroups).forEach(function(wz){
+    wzGroups[wz].forEach(function(name){branchList.push(name);});
+  });
+  // Y轴从下到上显示（市区在上方），所以反转
+  branchList.reverse();
+  // 获取有数据的产品类
+  var catNames=Object.keys(DATA.categories).filter(function(cn){
+    return Object.keys(DATA.branchCategories).some(function(bn){
+      var v=DATA.branchCategories[bn][cn];return v&&v[m]>0;
+    });
+  });
+  return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{textStyle:{color:getLabelColor(),fontSize:9},itemWidth:8,itemHeight:6,top:4,left:'center',type:'scroll'},grid:{left:48,right:18,top:36,bottom:20},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:getAxisLabel(),splitLine:getSplitLine()},yAxis:{type:'category',data:branchList,axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:9},axisTick:{show:false}},series:catNames.map(function(cn){
+    return{name:cn,type:'bar',stack:'bc',barWidth:'55%',data:branchList.map(function(bn){
+      var v=DATA.branchCategories[bn]&&DATA.branchCategories[bn][cn];
+      return v?v[m]:0;
+    }),itemStyle:{color:DATA.categoryColors[cn]||'#888'},label:{show:true,position:'insideRight',color:'#fff',fontSize:8,formatter:function(p){return p.value>0?p.value.toFixed(2).replace(/0$/,''):'';}}};
+  })};
+}
+
+function branchChannelBarOption(){
+  var m=currentMonth;
+  var wzGroups={'市区':[],'近郊':[],'远郊':[]};
+  Object.keys(DATA.wzMap).forEach(function(name){
+    wzGroups[DATA.wzMap[name]].push(name);
+  });
+  var branchList=[];
+  Object.keys(wzGroups).forEach(function(wz){
+    wzGroups[wz].forEach(function(name){branchList.push(name);});
+  });
+  branchList.reverse();
+  var chNames=Object.keys(DATA.channels[0]);
+  var chColors=['#C41A1A','#e74c3c','#f5a623','#5dade2','#3498db','#2ecc71','#9b59b6','#1abc9c'];
+  return{tooltip:{...getTooltipBase(),trigger:'axis'},legend:{textStyle:{color:getLabelColor(),fontSize:9},itemWidth:8,itemHeight:6,top:4,left:'center',type:'scroll'},grid:{left:48,right:18,top:36,bottom:20},xAxis:{type:'value',axisLine:getAxisLine(),axisLabel:getAxisLabel(),splitLine:getSplitLine()},yAxis:{type:'category',data:branchList,axisLine:getAxisLine(),axisLabel:{...getAxisLabel(),fontSize:9},axisTick:{show:false}},series:chNames.map(function(name,ci){
+    return{name:name,type:'bar',stack:'bch',barWidth:'55%',data:branchList.map(function(bn){
+      var bc=DATA.branchChannels[bn];
+      if(bc&&bc[m]&&bc[m][name])return bc[m][name];
+      return 0;
+    }),itemStyle:{color:CHANNEL_COLORS[name]||chColors[ci%chColors.length]},label:{show:true,position:'insideRight',color:'#fff',fontSize:8,formatter:function(p){return p.value>0?p.value.toFixed(2).replace(/0$/,''):'';}}};
+  })};
+}
+
 // ===== BRANCH TABLES =====
 function updateBranchTable(containerId,companyData,totalElId,rateData){
   var m=currentMonth,prev=m>0?m-1:m;
@@ -4600,7 +4657,7 @@ function updateKPI(){var m=currentMonth,prev=m>0?m-1:null;updateKPICard('kpiHome
 
 function updateKPICard(id,value,change,isPct){var vEl=document.getElementById(id),cEl=document.getElementById(id+'Change');animateValue(vEl,num(vEl),value,800,function(v){return v.toFixed(2).replace(/0$/,'')+(isPct?'%':'');});if(change===null){cEl.textContent='— 本月起始';cEl.className='kpi-change neutral';}else{var up=change>=0;var arrow=up?'▲':'▼';var sign=up?'+':'';var str=isPct?sign+change.toFixed(2).replace(/0$/,'')+'pp':sign+change.toFixed(2).replace(/0$/,'')+'%';cEl.textContent=arrow+' '+str;cEl.className='kpi-change '+(up?'up':'down');}}
 
-function updateAllCharts(){charts.rateTrend.setOption(rateTrendOption());charts.trend.setOption(trendOption());charts.warzone.setOption(warzoneOption());charts.productBar.setOption(productBarOption());charts.productPie.setOption(productPieOption());charts.categoryBar.setOption(categoryBarOption());charts.categoryPie.setOption(categoryPieOption());charts.channelBar.setOption(channelBarOption());charts.channelPie.setOption(channelPieOption());}
+function updateAllCharts(){charts.rateTrend.setOption(rateTrendOption());charts.trend.setOption(trendOption());charts.warzone.setOption(warzoneOption());charts.productBar.setOption(productBarOption());charts.productPie.setOption(productPieOption());charts.categoryBar.setOption(categoryBarOption());charts.categoryPie.setOption(categoryPieOption());charts.channelBar.setOption(channelBarOption());charts.channelPie.setOption(channelPieOption());charts.branchCategoryBar.setOption(branchCategoryBarOption());charts.branchChannelBar.setOption(branchChannelBarOption());}
 
 function updateBranchTables(){updateBranchTable('branchHomeBody',DATA.branchHome,'totalHome',DATA.branchHomeRate);updateBranchTableSimple('branchFttrBody',DATA.branchFttr,'totalFttr');updateBranchTableSimple('branchScreenBody',DATA.branchScreen,'totalScreen');}
 
@@ -4807,6 +4864,8 @@ window.addEventListener('load',function(){
   charts.categoryPie=echarts.init(document.getElementById('categoryPieChart'));
   charts.channelBar=echarts.init(document.getElementById('channelBarChart'));
   charts.channelPie=echarts.init(document.getElementById('channelPieChart'));
+  charts.branchCategoryBar=echarts.init(document.getElementById('branchCategoryBarChart'));
+  charts.branchChannelBar=echarts.init(document.getElementById('branchChannelBarChart'));
   updateAll(true);
   updateClock();setInterval(function(){updateClock();updateDrillClock();},1000);
   scaleScreen();window.addEventListener('resize',function(){scaleScreen();if(drillActive){scaleDrill();}setTimeout(function(){Object.values(charts).forEach(function(c){c.resize();});Object.values(dCharts).forEach(function(c){if(c)c.resize();});},100);});
