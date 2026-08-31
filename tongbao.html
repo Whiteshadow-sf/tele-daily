@@ -316,7 +316,7 @@ body.drilling .main-view{display:none}
 </div>
 
 <div class="footer">
-  数据来源：智光数据 / 宽带发展数据 底表<span class="pipe">|</span>口径：智屏/FTTR按归档时间、家宽/千兆按入网时间<span class="pipe">|</span>加载率=FTTR新增/千兆新增
+  数据来源：智光数据 / 宽带发展数据 底表<span class="pipe">|</span>口径：智屏/FTTR按归档时间、家宽/千兆按入网时间<span class="pipe">|</span>加载率=(FTTR日均-存量加载日均)/千兆日均
 </div>
 
 <div class="mask" id="mask"><div class="spin"></div>正在加载通报数据...</div>
@@ -921,8 +921,8 @@ function renderInsights(){
   html+='<li>公司整体 <strong>家宽</strong> 月度日均 <strong>'+fmt(O.jiakuan.avg,1)+'</strong> 户/日（'+prevMonth+'同期 '+fmt(june_jk,1)+'），完成率 <span class="'+(jkrate>=100?'pos':'neg')+'">'+fmt(jkrate,1)+'%</span>，较'+prevMonth+'日均 '+colorTag(mom_jk)+'；<strong>FTTR</strong> 月度日均 <strong>'+fmt(O.fttr.avg,1)+'</strong> 户/日（'+prevMonth+'同期 '+fmt(june_ft,1)+'），完成率 <span class="'+(ftrate>=100?'pos':'neg')+'">'+fmt(ftrate,1)+'%</span>，较'+prevMonth+'日均 '+colorTag(mom_ft)+'。</li>';
   html+='<li><strong>智屏</strong> 月度日均 <strong>'+fmt(O.zhiping.avg,1)+'</strong> 户/日（'+prevMonth+'同期 '+fmt(june_zp,1)+'），完成率 <span class="'+(zprate>=100?'pos':'neg')+'">'+fmt(zprate,1)+'%</span>，较'+prevMonth+'日均 '+colorTag(mom_zp)+'；<strong>千兆</strong> 月度日均 <strong>'+fmt(O.qianzhao.avg,1)+'</strong> 户/日（'+prevMonth+'同期 '+fmt(june_qz,1)+'），千兆占比 <span class="'+(qz_ratio>=32?'pos':'neg')+'">'+fmt(qz_ratio,1)+'</span>%，较'+prevMonth+'日均 '+colorTag(mom_qz)+'。</li>';
   html+='<li>家宽第一 <span class="pos">'+first.branch+'</span>（'+fmt(first.jiakuan.rate,1)+'%），暂落后 <span class="neg">'+last.branch+'</span>（'+fmt(last.jiakuan.rate,1)+'%）；智屏第一 <span class="pos">'+firstZp.branch+'</span>（'+fmt(firstZp.zhiping.rate,1)+'%）/ 暂落后 <span class="neg">'+lastZp.branch+'</span>（'+fmt(lastZp.zhiping.rate,1)+'%）；FTTR第一 <span class="pos">'+firstFt.branch+'</span>（'+fmt(firstFt.fttr.rate,1)+'%）/ 暂落后 <span class="neg">'+lastFt.branch+'</span>（'+fmt(lastFt.fttr.rate,1)+'%）。</li>';
-  var avg_load = O.fttr.avg && O.qianzhao.avg ? O.fttr.avg/O.qianzhao.avg*100 : 0;
-  html+='<li>公司整体 FTTR新增加载率 <span class="'+(avg_load>=50?'pos':'neg')+'">'+fmt(avg_load,1)+'</span>%（FTTR日均/千兆日均），反映FTTR在千兆客户中的渗透水平。</li>';
+  var avg_load = O.fttr.avg && O.qianzhao.avg ? (O.fttr.avg-(O.fttr.cunliang_avg||0))/O.qianzhao.avg*100 : 0;
+  html+='<li>公司整体 FTTR新增加载率 <span class="'+(avg_load>=50?'pos':'neg')+'">'+fmt(avg_load,1)+'</span>%（(FTTR日均-存量加载日均)/千兆日均），反映FTTR在千兆客户中的渗透水平。</li>';
   html+='</ul>';
   document.getElementById('insights').innerHTML=html;
 }
